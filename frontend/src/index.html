@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI虚拟人穿衣 SaaS 工作台</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <strong>TryOn Studio</strong>
+          <span>AI虚拟人穿衣</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-tab="create">新建试穿任务</button>
+        <button class="nav-item" data-tab="history">任务历史</button>
+        <button class="nav-item" data-tab="results">结果管理</button>
+        <button class="nav-item" data-tab="models">系统模特库</button>
+        <button class="nav-item" data-tab="credits">设置</button>
+      </nav>
+      <div class="side-card">
+        <span>可用额度</span>
+        <strong id="creditBalance">--</strong>
+        <small>提交时预扣，失败按规则返还</small>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MVP Core Workflow</p>
+          <h1>AI虚拟人穿衣工作台</h1>
+        </div>
+        <div class="top-actions">
+          <span class="status-dot"></span>
+          <span id="apiStatus">连接后端中</span>
+        </div>
+      </header>
+
+      <section id="createTab" class="tab-panel active">
+        <div class="workflow">
+          <section class="panel upload-panel">
+            <div class="panel-title">
+              <div>
+                <h2>1. 上传服装图</h2>
+                <p>图片支持 5KB-20MB，系统会自动生成百炼模型合规图</p>
+              </div>
+              <span id="garmentState" class="badge muted">待上传</span>
+            </div>
+            <label class="upload-zone" for="garmentInput">
+              <input id="garmentInput" type="file" accept="image/jpeg,image/png,image/webp">
+              <div id="garmentPreview" class="preview empty">选择正面图</div>
+              <div>
+                <strong id="garmentName">上传服装正面图</strong>
+                <span id="garmentMeta">给试衣模型使用；这里请上传“衣服正面/平铺图”，不要上传真人模特</span>
+              </div>
+            </label>
+            <label class="upload-zone compact" for="garmentDetailInput">
+              <input id="garmentDetailInput" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+              <div class="preview small empty">细节图</div>
+              <div>
+                <strong>上传服装细节参考图</strong>
+                <span id="garmentDetailMeta">可上传背面、Logo、印花、面料、领口、袖口等；最多 10 张，仅用于最终商用出图</span>
+              </div>
+            </label>
+            <div id="garmentDetailGrid" class="detail-grid"></div>
+            <div id="garmentCategoryConfirm" class="category-confirm hidden">
+              <label>
+                <span>服装品类确认</span>
+                <select id="garmentCategorySelect" disabled>
+                  <optgroup label="上半身 / 内搭">
+                    <option value="camisole">吊带 / 背心</option>
+                    <option value="base_layer">打底衫</option>
+                    <option value="tshirt">T恤</option>
+                    <option value="shirt">衬衫 / 上衣</option>
+                    <option value="knitwear">针织衫 / 毛衣</option>
+                    <option value="hoodie">卫衣</option>
+                  </optgroup>
+                  <optgroup label="上半身 / 外套">
+                    <option value="jacket">夹克 / 牛仔外套 / 皮衣</option>
+                    <option value="coat">风衣 / 大衣</option>
+                    <option value="down_jacket">羽绒服</option>
+                    <option value="blazer">西装 / 开衫</option>
+                  </optgroup>
+                  <optgroup label="下半身">
+                    <option value="skirt">半身裙</option>
+                    <option value="shorts">短裤</option>
+                    <option value="pants">长裤 / 裤装</option>
+                    <option value="wide_leg_pants">阔腿裤 / 喇叭裤</option>
+                    <option value="leggings">紧身裤 / 瑜伽裤</option>
+                  </optgroup>
+                  <optgroup label="连身一体式">
+                    <option value="dress">连衣裙</option>
+                    <option value="jumpsuit">连体裤 / 连体衣</option>
+                    <option value="swimsuit">连身泳衣</option>
+                  </optgroup>
+                  <optgroup label="特殊品类">
+                    <option value="sleepwear">睡衣 / 家居服</option>
+                    <option value="underwear">内衣 / 塑身衣</option>
+                    <option value="sportswear">运动上衣 / 冲锋衣 / 防晒衣</option>
+                    <option value="formal_dress">婚纱 / 礼服</option>
+                    <option value="traditional">汉服 / 旗袍 / 和服</option>
+                    <option value="protective">围裙 / 实验服 / 雨衣</option>
+                  </optgroup>
+                </select>
+              </label>
+              <small id="garmentCategoryHint">上传后系统会先识别默认品类，提交前可人工确认。</small>
+            </div>
+            <div id="garmentAnalysis" class="analysis-grid"></div>
+          </section>
+
+          <section id="agentPanel" class="panel disabled-panel">
+            <div class="panel-title">
+              <div>
+                <h2>2. 选择虚拟人/模特</h2>
+                <p>可选择系统模特，也可上传真人模特图</p>
+              </div>
+              <span id="modelState" class="badge muted">待选择</span>
+            </div>
+            <label class="upload-zone compact" for="modelInput">
+              <input id="modelInput" type="file" accept="image/jpeg,image/png,image/webp">
+              <div id="modelUploadPreview" class="preview small empty">上传真人</div>
+              <div>
+                <strong id="modelUploadName">上传真人/模特图片</strong>
+                <span id="modelUploadMeta">这里请上传“真人正面全身照”，不要上传衣服图</span>
+              </div>
+            </label>
+            <div id="modelGrid" class="model-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <div>
+                <h2>3. Agent 推荐参数</h2>
+                <p>输入用途，自动推荐画幅、背景、视频模板和风险提示</p>
+              </div>
+              <button id="recommendBtn" class="secondary-btn" disabled>生成推荐</button>
+            </div>
+            <textarea id="intentInput" rows="4" placeholder="例如：适合 TikTok 上新的欧美模特短视频，同时生成商品图" disabled></textarea>
+            <div id="agentLockHint" class="hint-box">
+              当前不可编辑。只有开启“试衣前图改图”后，Agent 推荐参数才会解锁，并且这些参数只会传给试衣前图改图模型使用。
+            </div>
+            <div class="form-row">
+              <label>
+                平台用途
+                <select id="platformUse">
+                  <option>商品图</option>
+                  <option>社媒图</option>
+                  <option>详情页图</option>
+                  <option>TikTok短视频</option>
+                  <option>Instagram</option>
+                  <option>Amazon</option>
+                </select>
+              </label>
+              <label>
+                输出类型
+                <select id="outputType">
+                  <option value="image">图片</option>
+                  <option value="video">30秒视频</option>
+                  <option value="image_video">图片+视频</option>
+                </select>
+              </label>
+            </div>
+            <div id="recommendation" class="recommendation empty">试衣前图改图已默认关闭，Agent 推荐参数暂不可编辑，避免运营要求影响服装原图一致性。</div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <div>
+                <h2>4. 参数确认</h2>
+                <p>所有 Agent 推荐值都可以人工修改</p>
+              </div>
+              <span id="costPreview" class="badge blue">预计 8 额度</span>
+            </div>
+            <div class="settings-grid">
+              <label>生成数量
+                <select id="imageCount">
+                  <option selected>1</option><option>2</option><option>4</option><option>6</option><option>8</option>
+                </select>
+              </label>
+              <label>图片画幅
+                <select id="imageRatio">
+                  <option>1:1</option><option>4:5</option><option>3:4</option><option>9:16</option>
+                </select>
+              </label>
+              <label>图片背景
+                <select id="imageBackground">
+                  <option>干净棚拍</option><option>白底</option><option>浅灰</option><option>室内</option><option>街拍</option><option>纯色</option>
+                </select>
+              </label>
+              <label>视频时长
+                <select id="videoDuration">
+                  <option>6</option><option>10</option><option selected>15</option><option>30</option>
+                </select>
+              </label>
+              <label>视频比例
+                <select id="videoRatio">
+                  <option selected>9:16</option><option>4:5</option><option>1:1</option><option>16:9</option>
+                </select>
+              </label>
+              <label>动作模板
+                <select id="motionTemplate">
+                  <option>静态镜头</option><option selected>轻微转身</option><option>慢走展示</option><option>上半身展示</option>
+                </select>
+              </label>
+              <label>帧一致性
+                <select id="consistency">
+                  <option selected>标准</option><option>增强</option>
+                </select>
+              </label>
+              <label>质量筛选
+                <select id="qualityFilter">
+                  <option selected>开启</option><option>关闭</option>
+                </select>
+              </label>
+              <label>品质链路
+                <select id="qualityStrategy">
+                  <option value="preview">快速预览 · 低成本初筛</option>
+                  <option value="commercial" selected>商用品质 · 多候选+精修+质检</option>
+                  <option value="studio">商拍增强 · 更严格门槛</option>
+                </select>
+              </label>
+              <label>试衣模型
+                <select id="tryonModel">
+                  <option value="gpt-image:try-on">GPT-Image 1.5 · 直接试衣</option>
+                  <option value="pixelcut:try-on" selected>Pixelcut Try-On · 当前主测</option>
+                  <option value="302:fashn-tryon">302.AI FASHN Try-On · 备选</option>
+                  <option value="aliyun:aitryon-plus">百炼 AI 试衣 Plus · 备选</option>
+                  <option value="pixazo:fashn-vton">Pixazo Fashn VTON · 中转备选</option>
+                  <option value="replicate:idm-vton">Replicate IDM-VTON · 实验模型</option>
+                </select>
+              </label>
+              <label>试衣前图改图
+                <select id="preEditEnabled">
+                  <option value="true">开启</option>
+                  <option value="false" selected>关闭</option>
+                </select>
+              </label>
+              <label>试衣图精修
+                <select id="refinerEnabled">
+                  <option value="true">开启</option>
+                  <option value="false" selected>关闭</option>
+                </select>
+              </label>
+              <label>最终商用出图
+                <select id="postOptimizeEnabled">
+                  <option value="true" selected>开启</option>
+                  <option value="false">关闭</option>
+                </select>
+              </label>
+              <label>出图模型
+                <select id="postOptimizeModel">
+                  <option value="gpt-image-1.5" selected>gpt-image-1.5 · 高质量最终图</option>
+                  <option value="gpt-image-1">gpt-image-1 · 稳定通用</option>
+                  <option value="gpt-image-1-mini">gpt-image-1-mini · 低成本预览</option>
+                </select>
+              </label>
+              <label class="wide-field">试衣前图改图模型
+                <select id="preEditModel">
+                  <option value="qwen-image-edit-plus" selected>qwen-image-edit-plus · 轻量保守编辑，成本较低</option>
+                  <option value="qwen-image-2.0-pro">qwen-image-2.0-pro · 高质量纹理和语义，适合商用详情图</option>
+                  <option value="qwen-image-edit-max">qwen-image-edit-max · 复杂一致性更强，成本最高</option>
+                </select>
+              </label>
+            </div>
+            <label class="prompt-field">最终商用出图要求
+              <textarea id="postOptimizePrompt" rows="4" placeholder="商品一致性是铁律：颜色、版型比例、衣长、装饰细节和纹理必须与原服装图一致；在此前提下要求图片高保真，尽全力提升清晰度。"></textarea>
+            </label>
+            <div id="preEditHint" class="hint-box">
+              当前选择：轻量保守编辑。适合清洁背景、轻微提亮、去水印、保留服装细节，成本相对可控。
+            </div>
+            <div id="refinerHint" class="hint-box">
+              已开启试衣图精修。基础试衣生效后，会继续修复服装边缘、融合关系和清晰度。
+            </div>
+            <div id="postOptimizeHint" class="hint-box">
+              试衣结果生成后会再做最终商用出图，重点提高清晰度、细节和自然度。
+            </div>
+            <div id="qualityStrategyHint" class="hint-box">
+              商用品质链路会生成至少 4 张候选图，并执行质量评分、精修和高清下载门槛。
+            </div>
+            <button id="submitTaskBtn" class="primary-btn" disabled>提交生成任务</button>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <div>
+                <h2>5. 商用品质生成前预检</h2>
+                <p>阻断项不允许提交，风险项会进入质量评分和推荐筛选</p>
+              </div>
+              <span id="preflightState" class="badge muted">待检查</span>
+            </div>
+            <div id="apiCapability" class="capability-card"></div>
+            <div id="preflightChecks" class="check-list"></div>
+          </section>
+        </div>
+
+        <aside class="result-column">
+          <section class="panel sticky">
+            <div class="panel-title">
+              <div>
+                <h2>当前任务</h2>
+                <p>状态可恢复，页面刷新后可在历史查看</p>
+              </div>
+            </div>
+            <div id="currentTask" class="task-empty">暂无任务</div>
+            <div id="resultGallery" class="result-gallery"></div>
+          </section>
+        </aside>
+      </section>
+
+      <section id="historyTab" class="tab-panel">
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>任务历史</h2>
+              <p>展示图片、视频、组合任务和阶段状态</p>
+            </div>
+            <button id="refreshTasksBtn" class="secondary-btn">刷新</button>
+          </div>
+          <div id="taskHistory" class="table-list"></div>
+        </section>
+      </section>
+
+      <section id="resultsTab" class="tab-panel">
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>结果管理</h2>
+              <p>按商用质量分级管理素材，未达门槛的图片不进入高清下载</p>
+            </div>
+            <button id="refreshResultsBtn" class="secondary-btn">刷新</button>
+          </div>
+          <div class="result-toolbar">
+            <button class="filter-chip active" data-result-filter="all">全部</button>
+            <button class="filter-chip" data-result-filter="recommended">推荐</button>
+            <button class="filter-chip" data-result-filter="usable">可用</button>
+            <button class="filter-chip" data-result-filter="repair_needed">待修复</button>
+            <button class="filter-chip" data-result-filter="unusable">不可用</button>
+          </div>
+          <div id="resultManager" class="managed-results"></div>
+        </section>
+      </section>
+
+      <section id="modelsTab" class="tab-panel">
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>系统模特库</h2>
+              <p>新增、修改、移除后会同步到新建任务页的模特选择区</p>
+            </div>
+          </div>
+          <form id="modelLibraryForm" class="model-admin-form">
+            <input id="modelEditId" type="hidden">
+            <label>模特图片
+              <input id="libraryModelInput" type="file" accept="image/jpeg,image/png,image/webp">
+            </label>
+            <label>名称
+              <input id="libraryModelName" type="text" placeholder="例如：Luna 亚洲全身站姿">
+            </label>
+            <label>性别
+              <select id="libraryModelGender">
+                <option value="female">女模特</option>
+                <option value="male">男模特</option>
+                <option value="unknown">不限</option>
+              </select>
+            </label>
+            <label>体型
+              <select id="libraryModelBody">
+                <option value="slim">slim</option>
+                <option value="regular" selected>regular</option>
+                <option value="athletic">athletic</option>
+                <option value="plus_size">plus_size</option>
+              </select>
+            </label>
+            <label>姿态
+              <select id="libraryModelPose">
+                <option value="full_body_standing" selected>full_body_standing</option>
+                <option value="half_body">half_body</option>
+                <option value="walking">walking</option>
+                <option value="side_view">side_view</option>
+              </select>
+            </label>
+            <label>适用品类
+              <input id="libraryModelCategories" type="text" placeholder="dress, coat, pants, shirt">
+            </label>
+            <label>风险标签
+              <input id="libraryModelRisks" type="text" placeholder="可选，例如：半身姿态, 手臂遮挡">
+            </label>
+            <div class="model-admin-preview">
+              <div id="libraryModelPreview" class="preview small empty">模特图</div>
+              <div>
+                <strong id="libraryModelFileName">未选择图片</strong>
+                <span id="libraryModelMode">新增模特</span>
+              </div>
+            </div>
+            <div class="model-admin-actions">
+              <button id="saveLibraryModelBtn" class="primary-btn" type="submit">保存模特</button>
+              <button id="cancelLibraryModelBtn" class="secondary-btn" type="button">取消编辑</button>
+            </div>
+          </form>
+          <div id="modelLibrary" class="model-grid large"></div>
+        </section>
+      </section>
+
+      <section id="creditsTab" class="tab-panel">
+        <section class="panel model-stack-panel">
+          <div class="panel-title">
+            <div>
+              <h2>模型与版本</h2>
+              <p>当前项目生成链路中启用的大模型，便于测试和业务方说明</p>
+            </div>
+          </div>
+          <div id="modelStack" class="model-stack"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>设置</h2>
+              <p>任务提交预扣，完成后结算，失败按规则返还</p>
+            </div>
+          </div>
+          <div id="creditLogs" class="table-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <div id="mediaModal" class="media-modal" aria-hidden="true">
+    <div class="media-modal-backdrop" data-close-modal></div>
+    <div class="media-modal-body">
+      <button class="modal-close" data-close-modal>关闭</button>
+      <div id="mediaModalContent"></div>
+    </div>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "virtual-tryon-saas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI virtual try-on SaaS MVP with separated frontend and backend.",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "backend": "node backend/src/server.js",
+    "frontend": "node frontend/src/static-server.js",
+    "dev": "node backend/src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

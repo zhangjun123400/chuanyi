@@ -1,0 +1,12 @@
+{
+  "name": "virtual-tryon-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/static-server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
