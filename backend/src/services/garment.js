@@ -1,10 +1,11 @@
+const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const oss = require("../storage/oss");
+const { MAX_IMAGE_UPLOAD_BYTES, PROVIDER_MAX_IMAGE_BYTES, PROVIDER_MIN_IMAGE_EDGE, PROVIDER_MAX_IMAGE_EDGE, MIN_IMAGE_UPLOAD_BYTES } = require("./constants");
 
-const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
-const PROVIDER_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const PROVIDER_MIN_IMAGE_EDGE = 150;
-const PROVIDER_MAX_IMAGE_EDGE = 4096;
-const MIN_IMAGE_UPLOAD_BYTES = 5 * 1024;
+const DATA_DIR = path.join(__dirname, "..", "..", "data");
+
 const MAX_GARMENT_REFERENCE_IMAGES = 10;
 
 const GARMENT_CATEGORY_OPTIONS = {
@@ -79,11 +80,8 @@ function riskFromFile(file) {
     if (size > 0 && size < MIN_IMAGE_UPLOAD_BYTES) {
       riskFlags.push({ code: "aliyun_file_too_small", level: "block", message: "百炼 AI 试衣要求图片大于 5KB，请更换图片。" });
     }
-    if (size > MAX_IMAGE_UPLOAD_BYTES) {
-      riskFlags.push({ code: "aliyun_file_too_large", level: "block", message: "图片超过 20MB，请压缩后上传。" });
-    }
   }
-  if (file && Number(file.width || 1600) < 1024 && Number(file.height || 1600) < 1024) {
+  if (file && Number(file.width || 0) > 0 && Number(file.height || 0) > 0 && Number(file.width || 1600) < 1024 && Number(file.height || 1600) < 1024) {
     riskFlags.push({ code: "low_resolution", level: "warn", message: "图片清晰度较低，建议替换为长边大于 1024px 的图片。" });
   }
   return riskFlags;
@@ -111,16 +109,30 @@ function normalizeGarmentReferenceImages(value) {
   }).filter(item => item.file_url);
 }
 
+function saveDataUrlToLocal(dataUrl, fileName, folder = "uploads") {
+  const parsed = oss.parseDataUrl(dataUrl);
+  if (!parsed) return null;
+  const dir = path.join(DATA_DIR, folder);
+  fs.mkdirSync(dir, { recursive: true });
+  const safeName = String(fileName || "asset").replace(/[^\w.\-一-龥]/g, "_");
+  const ext = oss.extensionFromName(safeName, parsed.contentType);
+  const outputName = `${Date.now()}-${crypto.randomBytes(5).toString("hex")}${ext}`;
+  const outputPath = path.join(dir, outputName);
+  fs.writeFileSync(outputPath, parsed.buffer);
+  return {
+    provider: "local",
+    object_key: null,
+    read_url: `/v1/media/${folder}/${outputName}`
+  };
+}
+
 async function normalizeUploadedFile(file, folder) {
   if (!file) return file;
-  if ((file.url || file.read_url) || !file.data_url || !oss.isConfigured()) return file;
-  const token = await oss.uploadDataUrl({
-    dataUrl: file.data_url,
-    fileName: file.name,
-    folder
-  });
-  if (!token) return file;
-  return { ...file, url: token.read_url, read_url: token.read_url, object_key: token.object_key };
+  if (file.url || file.read_url) return file;
+  if (!file.data_url) return file;
+  const result = saveDataUrlToLocal(file.data_url, file.name, folder);
+  if (!result) return file;
+  return { ...file, url: result.read_url, read_url: result.read_url, object_key: null };
 }
 
 module.exports = {
@@ -131,6 +143,7 @@ module.exports = {
   isRemoteUrl,
   normalizeGarmentReferenceImages,
   normalizeUploadedFile,
+  saveDataUrlToLocal,
   MAX_GARMENT_REFERENCE_IMAGES,
   MAX_IMAGE_UPLOAD_BYTES,
   PROVIDER_MAX_IMAGE_BYTES,

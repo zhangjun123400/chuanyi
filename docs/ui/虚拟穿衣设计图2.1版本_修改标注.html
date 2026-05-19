@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>虚拟穿衣设计图 v2.1 · 修改标注</title>
+<style>
+  :root {
+    --brand: #2D6CF6;
+    --brand-hover: #1E54D4;
+    --brand-light: #EEF2FE;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --danger-light: #FEF2F2;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --border: #E5E7EB;
+    --border-light: #F3F4F6;
+    --bg-page: #F9FAFB;
+    --bg-card: #FFFFFF;
+    --radius-sm: 6px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif; background: var(--bg-page); color: var(--text-primary); line-height: 1.6; }
+
+  /* ── Header ── */
+  .header { background: #fff; border-bottom: 1px solid var(--border); padding: 32px 48px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .sub { color: var(--text-secondary); margin-top: 4px; font-size: 14px; }
+  .header .meta { display: flex; gap: 24px; margin-top: 16px; }
+  .header .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-tertiary); }
+  .header .meta-item strong { color: var(--text-primary); }
+  .priority-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .priority-badge.p0 { background: #FEF2F2; color: #DC2626; }
+  .priority-badge.p1 { background: #FFFBEB; color: #D97706; }
+  .priority-badge.p2 { background: #EEF2FE; color: #4F46E5; }
+
+  /* ── Summary Cards ── */
+  .summary-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 32px 48px 0; }
+  .summary-card { background: #fff; border-radius: var(--radius-lg); padding: 20px 24px; border: 1px solid var(--border); }
+  .summary-card .num { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
+  .summary-card .label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .summary-card.red .num { color: #DC2626; }
+  .summary-card.amber .num { color: #D97706; }
+  .summary-card.blue .num { color: #4F46E5; }
+
+  /* ── Fix Cards ── */
+  .content { padding: 32px 48px 64px; display: flex; flex-direction: column; gap: 40px; }
+
+  .fix-card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+  .fix-card-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--border-light); }
+  .fix-card-header h2 { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+  .fix-card-header .fix-num { font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
+  .fix-card-body { padding: 28px; }
+  .fix-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; line-height: 1.7; }
+
+  /* ── Before / After ── */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .col-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .col-label.before { color: #DC2626; }
+  .col-label.after  { color: #10B981; }
+  .col-label::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+  .col-label.before::before { background: #DC2626; }
+  .col-label.after::before  { background: #10B981; }
+  .demo-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; background: var(--bg-page); position: relative; }
+  .demo-box.bad { border-color: #FECACA; background: #FFF5F5; }
+  .demo-box.good { border-color: #A7F3D0; background: #F0FDF4; }
+
+  /* ── Shared demo styles ── */
+  .demo-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Modal style */
+  .modal-mock { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border); padding: 24px; max-width: 420px; }
+  .modal-mock h4 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .modal-mock .field { margin-bottom: 14px; }
+  .modal-mock .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--text-secondary); }
+  .modal-mock .field input { width: 100%; height: 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 10px; font-size: 13px; outline: none; }
+  .modal-mock .field input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(45,108,246,0.1); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: none; gap: 6px; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-secondary { background: #fff; color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-sm { height: 30px; padding: 0 12px; font-size: 12px; }
+
+  /* Fix 1 - Password Box */
+  .pwd-box { display: flex; align-items: center; justify-content: space-between; background: #F3F4F6; border-radius: var(--radius-sm); padding: 10px 14px; font-family: var(--font-mono); }
+  .pwd-box .masked { font-size: 16px; letter-spacing: 2px; color: var(--text-primary); }
+  .pwd-box .plain { font-size: 14px; color: var(--text-primary); letter-spacing: 1px; }
+  .eye-toggle { background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 4px; font-size: 16px; }
+  .copy-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; margin-top: 8px; }
+  .copy-btn.copied { color: var(--success); }
+  .warning-text { font-size: 12px; color: #DC2626; margin-top: 10px; display: flex; align-items: flex-start; gap: 4px; }
+
+  /* Fix 2 - Confirm Modal */
+  .confirm-body { display: flex; align-items: flex-start; gap: 12px; }
+  .confirm-icon { width: 40px; height: 40px; border-radius: 50%; background: #FEF3C7; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+
+  /* Fix 3 - Remember Me */
+  .checkbox-item { display: flex; align-items: center; gap: 8px; }
+  .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand); }
+  .hint-text { font-size: 12px; color: var(--text-tertiary); margin-left: 24px; transition: all 0.2s; }
+  .hint-text.active { color: var(--success); font-weight: 500; }
+
+  /* Fix 4 - Sidebar */
+  .sidebar-mock { width: 240px; background: #1E293B; border-radius: var(--radius); padding: 20px; color: #E2E8F0; font-size: 13px; }
+  .sidebar-mock .user-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .sidebar-mock .user-role { display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 100px; background: rgba(45,108,246,0.3); color: #93C5FD; margin-top: 4px; }
+  .sidebar-mock .expiry { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #94A3B8; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-mock .expiry .dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; flex-shrink: 0; }
+
+  /* Fix 5 - Empty State */
+  .empty-state { text-align: center; padding: 40px 20px; }
+  .empty-icon { width: 64px; height: 64px; border-radius: 50%; background: #F3F4F6; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px; }
+
+  /* Fix 6 - Topbar */
+  .topbar-mock { background: #fff; border-bottom: 1px solid var(--border); padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-mock .page-title { font-size: 16px; font-weight: 600; }
+  .topbar-mock .meta-right { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-secondary); }
+  .topbar-mock .user-count { background: var(--brand-light); color: var(--brand); padding: 2px 10px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+
+  /* ── Annotation markers ── */
+  .annotation { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #EF4444; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .annotation.good { background: #10B981; }
+
+  /* Fix indicator lines */
+  .arrow-bad { color: #DC2626; font-size: 11px; font-weight: 600; margin-top: 6px; }
+  .arrow-good { color: #10B981; font-size: 11px; font-weight: 600; margin-top: 6px; }
+
+  /* Privacy mask fix 1 */
+  .pwd-plaintext-bad { font-family: var(--font-mono); background: #F3F4F6; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <h1>虚拟穿衣设计图 v2.1 · UI 修改标注</h1>
+  <div class="sub">基于 v2.0 实现版本(http://127.0.0.1:3000/ / :3001)的实际体验，标注需调整的 UI 项</div>
+  <div class="meta">
+    <div class="meta-item">📅 <strong>2026-05-18</strong></div>
+    <div class="meta-item">👤 <strong>采薇</strong> (UI设计师)</div>
+    <div class="meta-item">📋 共 <strong>6</strong> 项修改标注</div>
+  </div>
+</div>
+
+<!-- ═══ SUMMARY BAR ═══ -->
+<div class="summary-bar">
+  <div class="summary-card red">
+    <div class="num">2</div>
+    <div class="label">P0 · 安全/关键体验 · 必须修改</div>
+  </div>
+  <div class="summary-card amber">
+    <div class="num">3</div>
+    <div class="label">P1 · 操作体验 · 建议修改</div>
+  </div>
+  <div class="summary-card blue">
+    <div class="num">1</div>
+    <div class="label">P2 · 细节优化 · 锦上添花</div>
+  </div>
+</div>
+
+<!-- ═══ FIX CARDS ═══ -->
+<div class="content">
+
+  <!-- ── Fix 1: 密码展示安全性 P0 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p0">P0</span> 创建用户后密码展示安全性 <span class="fix-num">修复项 #1</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>当前创建用户后，密码以明文形式完整展示在弹窗中（monospace字体灰色底框），任何人都可以直接看到完整密码。缺少脱敏显示、眼图标切换、一键复制、和「仅展示一次」的安全警告。
+      </div>
+      <div class="comparison">
+        <div>
+          <div class="col-label before">❌ 修改前（当前实现）</div>
+          <div class="demo-box bad">
+            <div class="demo-label">当前：明文暴露完整密码</div>
+            <div class="modal-mock" style="border: none; box-shadow: none;">
+              <h4>用户创建成功</h4>
+              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">新用户 <strong>new_user@tryonstudio.local</strong></p>
+              <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">初始密码：</p>
+              <div class="pwd-plaintext-bad">a3f8d2k91m</div>
+              <div style="margin-top:14px;text-align:right;">
+                <button class="btn btn-secondary btn-sm">关闭</button>
+              </div>
+            </div>
+            <div class="arrow-bad">⚠ 明文密码任何人可见，屏幕旁人有安全风险</div>
+            <div class="arrow-bad">⚠ 按钮「关闭」无确认感，管理员可能未保存就关掉</div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label after">✅ 修改后（设计稿）</div>
+          <div class="demo-box good">
+            <div class="demo-label">目标：脱敏显示 + 眼图标切换 + 复制 + 警告</div>
+            <div class="modal-mock" style="border: none; box-shadow: none;">
+              <h4>用户创建成功</h4>
+              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">新用户：<strong>new_user@tryonstudio.local</strong></p>
+              <p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">初始密码：</p>
+              <div class="pwd-box">
+                <span class="masked">a3f8••••••</span>
+                <button class="eye-toggle" title="查看完整密码">👁</button>
+              </div>
+              <button class="btn btn-ghost copy-btn btn-sm" style="margin-top:8px;">📋 一键复制</button>
+              <div class="warning-text">
+                <span>⚠️</span>
+                <span>此密码仅展示一次，关闭弹窗后将无法找回。请妥善保存并交给用户。</span>
+              </div>
+              <div style="margin-top:14px;text-align:right;">
+                <button class="btn btn-primary btn-sm">确认已保存</button>
+              </div>
+            </div>
+            <div class="arrow-good">✓ 默认脱敏 a3f8••••，点击👁查看完整密码</div>
+            <div class="arrow-good">✓ 一键复制按钮，复制后变绿「✓ 已复制」</div>
+            <div class="arrow-good">✓ 红色警告告知仅展示一次</div>
+            <div class="arrow-good">✓ 按钮「确认已保存」明确用户动作</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fix 2: 重置密码确认弹窗 P0 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p0">P0</span> 重置密码确认使用自定义弹窗替代原生 confirm() <span class="fix-num">修复项 #2</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>管理员对用户执行「重置密码」操作时，当前使用浏览器原生 <code style="background:#F3F4F6;padding:1px 6px;border-radius:3px;">confirm()</code> 对话框。原生弹窗在不同操作系统样式不一致，无品牌感，且无法自定义按钮文案和警告信息。
+      </div>
+      <div class="comparison">
+        <div>
+          <div class="col-label before">❌ 修改前（当前实现）</div>
+          <div class="demo-box bad">
+            <div class="demo-label">当前：浏览器原生 confirm() 弹窗</div>
+            <div style="background:#fff;border:2px solid #D1D5DB;border-radius:8px;padding:16px;text-align:center;">
+              <p style="font-size:13px;margin-bottom:10px;">127.0.0.1:3001 显示：</p>
+              <p style="font-size:13px;">确定要重置用户 xxx 的密码吗？此操作不可撤销。</p>
+              <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+                <span style="background:#EFEFEF;padding:4px 16px;border-radius:4px;font-size:12px;">取消</span>
+                <span style="background:#2D6CF6;color:#fff;padding:4px 16px;border-radius:4px;font-size:12px;">确定</span>
+              </div>
+            </div>
+            <div class="arrow-bad">⚠ 浏览器原生弹窗，macOS / Windows 样式不一致，无品牌感</div>
+            <div class="arrow-bad">⚠ 无法展示详细警告信息（如告知用户将被强制退出）</div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label after">✅ 修改后（设计稿）</div>
+          <div class="demo-box good">
+            <div class="demo-label">目标：自定义品牌确认弹窗</div>
+            <div class="modal-mock" style="border: none; box-shadow: none;">
+              <div class="confirm-body">
+                <div class="confirm-icon">⚠️</div>
+                <div>
+                  <h4 style="margin-bottom:6px;">重置用户密码</h4>
+                  <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+                    确定要重置用户 <strong>zhangsan@123.com</strong> 的密码吗？
+                  </p>
+                  <div style="background:#FFFBEB;border-radius:6px;padding:10px 12px;margin-top:10px;font-size:12px;color:#92400E;">
+                    ⚠ 重置后该用户的所有登录会话将立即失效，需使用新密码重新登录。
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+                <button class="btn btn-secondary btn-sm">取消</button>
+                <button class="btn btn-danger btn-sm">确认重置</button>
+              </div>
+            </div>
+            <div class="arrow-good">✓ 品牌化设计，与整体 UI 风格统一</div>
+            <div class="arrow-good">✓ 黄色警告区域告知影响范围（所有会话失效）</div>
+            <div class="arrow-good">✓ 危险操作用红色按钮「确认重置」明确语义</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fix 3: 记住我动态提示 P1 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p1">P1</span> 「记住我」增加动态提示文案 <span class="fix-num">修复项 #3</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>主应用登录页「记住我」复选框文案固定为「记住我（30天免登录）」，无论勾选与否都显示相同文字。用户无法感知勾选和不勾选的区别。管理员后台登录页的「记住我」则完全没有提示文案。
+      </div>
+      <div class="comparison">
+        <div>
+          <div class="col-label before">❌ 修改前（当前实现）</div>
+          <div class="demo-box bad">
+            <div class="demo-label">当前：固定文案，无差异提示</div>
+            <div style="background:#fff;border-radius:8px;padding:20px;">
+              <!-- unchecked -->
+              <div class="checkbox-item" style="margin-bottom:12px;">
+                <input type="checkbox" id="cb-bad-1"><label for="cb-bad-1" style="font-size:13px;">记住我（30天免登录）</label>
+              </div>
+              <p style="font-size:11px;color:var(--text-tertiary);margin-left:24px;">← 未勾选也显示30天，误导</p>
+              <!-- checked -->
+              <div class="checkbox-item">
+                <input type="checkbox" id="cb-bad-2" checked><label for="cb-bad-2" style="font-size:13px;">记住我（30天免登录）</label>
+              </div>
+              <p style="font-size:11px;color:var(--text-tertiary);margin-left:24px;">← 勾选了还是同样文案，无变化</p>
+            </div>
+            <div class="arrow-bad">⚠ 用户不知道勾不勾有什么区别</div>
+            <div class="arrow-bad">⚠ 管理员后台登录页没有提示文案</div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label after">✅ 修改后（设计稿）</div>
+          <div class="demo-box good">
+            <div class="demo-label">目标：动态提示文案随勾选状态变化</div>
+            <div style="background:#fff;border-radius:8px;padding:20px;">
+              <!-- unchecked -->
+              <div class="checkbox-item" style="margin-bottom:4px;">
+                <input type="checkbox" id="cb-good-1"><label for="cb-good-1" style="font-size:13px;">记住我</label>
+              </div>
+              <div class="hint-text" style="margin-bottom:16px;">7 天内保持登录</div>
+              <!-- checked -->
+              <div class="checkbox-item" style="margin-bottom:4px;">
+                <input type="checkbox" id="cb-good-2" checked><label for="cb-good-2" style="font-size:13px;">记住我</label>
+              </div>
+              <div class="hint-text active">30 天内无需重新登录</div>
+            </div>
+            <div class="arrow-good">✓ 未勾选：「7 天内保持登录」</div>
+            <div class="arrow-good">✓ 勾选后：「30 天内无需重新登录」变绿色高亮</div>
+            <div class="arrow-good">✓ 管理员后台同步使用此交互</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fix 4: Sidebar 登录有效期显示 P1 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p1">P1</span> 主应用 Sidebar 补充登录有效期显示 <span class="fix-num">修复项 #4</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>主应用 Sidebar 用户区域目前只显示姓名、角色、额度，缺少「登录有效期至 X月X日」的提示。用户无法感知当前登录何时过期，可能在操作中途被踢出。
+      </div>
+      <div class="comparison">
+        <div>
+          <div class="col-label before">❌ 修改前（当前实现）</div>
+          <div class="demo-box bad">
+            <div class="demo-label">当前：缺少登录有效期</div>
+            <div class="sidebar-mock" style="background:#1E293B;">
+              <div class="user-name">运营管理员</div>
+              <div class="user-role">operator</div>
+              <div style="font-size:11px;color:#94A3B8;margin-top:6px;">额度: 1200</div>
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">
+                <span style="font-size:11px;color:#94A3B8;cursor:pointer;">修改密码</span>
+                <span style="font-size:11px;color:#F87171;cursor:pointer;">登出</span>
+              </div>
+            </div>
+            <div class="arrow-bad">⚠ 用户不知道登录何时过期</div>
+            <div class="arrow-bad">⚠ 可能在生成任务执行到一半时被强制退出</div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label after">✅ 修改后（设计稿）</div>
+          <div class="demo-box good">
+            <div class="demo-label">目标：显示登录有效期，绿色圆点表示活跃状态</div>
+            <div class="sidebar-mock" style="background:#1E293B;">
+              <div class="user-name">运营管理员</div>
+              <div class="user-role">operator</div>
+              <div style="font-size:11px;color:#94A3B8;margin-top:6px;">额度: 1200</div>
+              <div class="expiry">
+                <span class="dot"></span>
+                <span>登录有效期至 6月17日</span>
+              </div>
+              <div style="margin-top:4px;display:flex;flex-direction:column;gap:4px;">
+                <span style="font-size:11px;color:#94A3B8;cursor:pointer;">修改密码</span>
+                <span style="font-size:11px;color:#F87171;cursor:pointer;">登出</span>
+              </div>
+            </div>
+            <div class="arrow-good">✓ 绿色圆点表示当前登录活跃</div>
+            <div class="arrow-good">✓ 显示「登录有效期至 6月17日」让用户感知</div>
+            <div class="arrow-good">✓ 有效期根据 token 过期时间动态计算</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fix 5: 空态 / 过渡页 / Loading P1 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p1">P1</span> 补充空态引导、过渡页倒计时、Loading 状态 <span class="fix-num">修复项 #5</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>三个场景缺少完善的 UI 状态：(1) 用户列表空态仅显示纯文本「暂无用户」，无引导按钮；(2) 管理员免密进入后台时直接跳入，无过渡动画；(3) 修改密码成功后直接跳到空白登录页，缺少过渡告知。
+      </div>
+
+      <!-- 5a: Empty State -->
+      <div style="margin-bottom:28px;">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-secondary);">5a · 用户列表空态</h4>
+        <div class="comparison">
+          <div>
+            <div class="col-label before">❌ 修改前</div>
+            <div class="demo-box bad">
+              <div style="text-align:center;padding:30px;">
+                <p style="color:var(--text-tertiary);font-size:14px;">暂无用户</p>
+              </div>
+            </div>
+            <div class="arrow-bad">⚠ 干巴巴的文字，没有行动引导</div>
+          </div>
+          <div>
+            <div class="col-label after">✅ 修改后</div>
+            <div class="demo-box good">
+              <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <p style="font-weight:600;margin-bottom:4px;">暂无用户</p>
+                <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">还没有创建任何用户账号，点击下方按钮创建第一个用户</p>
+                <button class="btn btn-primary btn-sm">+ 创建第一个用户</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5b: Transition Pages -->
+      <div style="margin-bottom:28px;">
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-secondary);">5b · 过渡提示页</h4>
+        <div class="comparison">
+          <div>
+            <div class="col-label before">❌ 修改前（修改密码后）</div>
+            <div class="demo-box bad">
+              <div style="text-align:center;padding:30px;background:#fff;border-radius:8px;">
+                <p style="font-size:13px;color:var(--text-secondary);">密码修改成功 → 直接跳转空白登录页</p>
+                <p style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">用户不知道发生了什么</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="col-label after">✅ 修改后（修改密码后）</div>
+            <div class="demo-box good">
+              <div style="text-align:center;padding:24px;background:#fff;border-radius:8px;">
+                <div style="font-size:32px;margin-bottom:8px;">✓</div>
+                <p style="font-weight:600;font-size:15px;">密码已修改</p>
+                <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">为保障账号安全，所有设备已退出登录</p>
+                <p style="font-size:12px;color:var(--text-secondary);">请使用新密码重新登录</p>
+                <p style="font-size:11px;color:var(--text-tertiary);margin-top:10px;">3 秒后自动跳转登录页</p>
+                <button class="btn btn-primary btn-sm" style="margin-top:8px;">立即登录</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5c: Admin auto-login transition -->
+      <div>
+        <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-secondary);">5c · 管理员免密过渡页</h4>
+        <div class="comparison">
+          <div>
+            <div class="col-label before">❌ 修改前</div>
+            <div class="demo-box bad">
+              <div style="text-align:center;padding:30px;background:#fff;border-radius:8px;">
+                <p style="font-size:13px;color:var(--text-secondary);">新标签页打开 :3001</p>
+                <p style="font-size:12px;color:var(--text-tertiary);">→ 直接进入后台，无任何过渡</p>
+              </div>
+            </div>
+            <div class="arrow-bad">⚠ 用户不知道为何能直接进入</div>
+          </div>
+          <div>
+            <div class="col-label after">✅ 修改后</div>
+            <div class="demo-box good">
+              <div style="text-align:center;padding:24px;background:#fff;border-radius:8px;">
+                <p style="font-weight:600;font-size:14px;">TryOn Studio · 管理后台</p>
+                <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">检测到已登录的管理员账号：</p>
+                <p style="font-weight:600;font-size:13px;margin-top:4px;">admin@tryonstudio.local</p>
+                <p style="font-size:12px;color:var(--text-tertiary);margin-top:10px;">正在进入管理后台...</p>
+                <button class="btn btn-ghost btn-sm" style="margin-top:10px;">这不是我，退出登录</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Fix 6: Admin Topbar 优化 P2 ── -->
+  <div class="fix-card">
+    <div class="fix-card-header">
+      <h2><span class="priority-badge p2">P2</span> 管理员后台 Topbar 增加页面标题与用户计数 <span class="fix-num">修复项 #6</span></h2>
+    </div>
+    <div class="fix-card-body">
+      <div class="fix-desc">
+        <strong>问题：</strong>管理员后台顶部栏只有品牌名 + 用户名 + 登出按钮，缺少当前页面标题和用户总数统计。管理员需要进入用户列表才能看到用户数量，信息获取效率低。
+      </div>
+      <div class="comparison">
+        <div>
+          <div class="col-label before">❌ 修改前（当前实现）</div>
+          <div class="demo-box bad">
+            <div class="topbar-mock" style="border:1px solid #FECACA;">
+              <span style="font-weight:600;color:var(--brand);">TryOn Studio</span>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:13px;">admin@tryonstudio.local</span>
+                <span style="font-size:12px;color:#F87171;cursor:pointer;">登出</span>
+              </div>
+            </div>
+            <div class="arrow-bad" style="margin-top:10px;">⚠ 缺少页面标题，不知道当前在哪个页面</div>
+            <div class="arrow-bad">⚠ 缺少用户总数统计</div>
+          </div>
+        </div>
+        <div>
+          <div class="col-label after">✅ 修改后（设计稿）</div>
+          <div class="demo-box good">
+            <div class="topbar-mock" style="border:1px solid #A7F3D0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span class="page-title">用户管理</span>
+                <span class="user-count">共 12 个用户</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:13px;color:var(--text-secondary);">admin@tryonstudio.local</span>
+                <span style="font-size:12px;color:#F87171;cursor:pointer;">登出</span>
+              </div>
+            </div>
+            <div class="arrow-good" style="margin-top:10px;">✓ 左侧显示当前页面标题「用户管理」/「操作日志」</div>
+            <div class="arrow-good">✓ 用户计数徽标「共 N 个用户」一目了然</div>
+            <div class="arrow-good">✓ 切换 Tab 时自动更新标题和计数</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div style="padding: 24px 48px 40px; border-top: 1px solid var(--border); margin: 0 48px;">
+  <p style="font-size:12px; color: var(--text-tertiary);">
+    虚拟穿衣设计图 v2.1 · 修改标注 &nbsp;|&nbsp; 采薇 · UI设计师 &nbsp;|&nbsp; 2026-05-18<br>
+    此文件为 v2.0 设计稿的补充标注，标注项均已与 v2.0 实现版本逐一比对确认。<br>
+    建议与 <code style="background:#F3F4F6;padding:1px 4px;border-radius:3px;">docs/ui/虚拟穿衣设计图2.0版本_用户系统.html</code> 配合使用。
+  </p>
+</div>
+
+</body>
+</html>

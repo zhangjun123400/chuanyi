@@ -2,7 +2,7 @@
 // Called by: server.js (refactored entry point)
 // Depends on: store, garment, validation, quality, model-gateway
 
-const { readStore, writeStore, id, now, addEvent, findModelById } = require("../store/store");
+const { readStore, updateStore, id, now, addEvent, findModelById } = require("../store/store");
 const { normalizeGarmentReferenceImages } = require("./garment");
 const { validationFailed, normalizeProviderError } = require("./validation");
 const { clamp } = require("./quality");
@@ -30,15 +30,18 @@ const STATUS_FLOW_VIDEO = [
   ["completed", 100, "生成完成"]
 ];
 
-function updateTaskStage(store, task, status, progress, message) {
-  task.status = status;
-  task.progress = progress;
-  task.current_stage = status;
-  task.message = message;
-  task.updated_at = now();
-  task.stage_timings[status] = task.updated_at;
-  addEvent(store, task.id, status, progress, message);
-  writeStore(store);
+async function updateTaskStage(taskId, status, progress, message) {
+  await updateStore(store => {
+    const task = store.tasks.find(t => t.id === taskId);
+    if (!task || task.status === "cancelled" || task.status === "completed" || task.status === "failed") return;
+    task.status = status;
+    task.progress = progress;
+    task.current_stage = status;
+    task.message = message;
+    task.updated_at = now();
+    task.stage_timings[status] = task.updated_at;
+    addEvent(store, task.id, status, progress, message);
+  });
 }
 
 async function createImageCandidate(store, task, index, context, imageCount, baseProgress, attempt, maxAttempts) {
@@ -47,16 +50,16 @@ async function createImageCandidate(store, task, index, context, imageCount, bas
     max_attempts: maxAttempts
   };
   const selectedTryonModel = String(task.params?.image?.tryon_model || "").toLowerCase();
-  const isGptImageTryon = selectedTryonModel === "gpt-image:try-on" || selectedTryonModel === "gpt-image:tryon" || selectedTryonModel === "gpt-image";
+  const isGptImageTryon = selectedTryonModel === "gpt-image:try-on" || selectedTryonModel === "gpt-image";
   if (!isGptImageTryon && task.params?.pre_edit?.enabled !== false) {
-    updateTaskStage(store, task, "pre_editing", clamp(Math.max(20, baseProgress), 1, 98), `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在做试衣前素材改图`);
+    await updateTaskStage(task.id, "pre_editing", clamp(Math.max(20, baseProgress), 1, 98), `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在做试衣前素材改图`);
   }
-  updateTaskStage(store, task, "virtual_tryon", clamp(Math.max(36, baseProgress + 8), 1, 98), `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在虚拟试衣中`);
+  await updateTaskStage(task.id, "virtual_tryon", clamp(Math.max(36, baseProgress + 8), 1, 98), `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在虚拟试衣中`);
   let aiResult = await generateTryOnImage(task, context, index);
   let effectValidation = aiResult.model_meta?.tryon_effect_validation || null;
   try {
     if (!effectValidation) {
-      updateTaskStage(store, task, "effect_validating", task.active_progress.validate, `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在检查商品一致性`);
+      await updateTaskStage(task.id, "effect_validating", task.active_progress.validate, `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在检查商品一致性`);
       effectValidation = await validateTryOnEffectWithVision({ task, context, aiResult });
     }
     if (effectValidation && !aiResult.model_meta?.tryon_effect_validation) {
@@ -104,7 +107,7 @@ async function createImageCandidate(store, task, index, context, imageCount, bas
       }
     };
     aiResult = await optimizeImageWithOpenAI(task, context, aiResult, index);
-    updateTaskStage(store, task, "effect_validating", task.active_progress.validate, `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在复核最终商品一致性`);
+    await updateTaskStage(task.id, "effect_validating", task.active_progress.validate, `第 ${index + 1}/${imageCount} 张，第 ${attempt}/${maxAttempts} 次：正在复核最终商品一致性`);
     const finalValidation = await validateTryOnEffectWithVision({ task, context, aiResult });
     if (finalValidation) {
       task.stage_timings[`final_product_fidelity_validate_${index}_attempt_${attempt}`] = finalValidation;
@@ -228,7 +231,7 @@ async function createResult(store, task, mediaType, index, context) {
           validation?.reason || "",
           ...(validation?.issue_tags || [])
         ].filter(Boolean).join("；") || "颜色、衣长比例或纹理细节与原图不一致";
-        updateTaskStage(store, task, "virtual_tryon", clamp(Math.max(36, baseProgress + 8), 1, 98), `第 ${index + 1}/${imageCount} 张商品一致性未通过，正在自动重试 ${attempt + 1}/${maxAttempts}`);
+        await updateTaskStage(task.id, "virtual_tryon", clamp(Math.max(36, baseProgress + 8), 1, 98), `第 ${index + 1}/${imageCount} 张商品一致性未通过，正在自动重试 ${attempt + 1}/${maxAttempts}`);
       } else {
         aiResult.model_meta = {
           ...(aiResult.model_meta || {}),
@@ -241,7 +244,7 @@ async function createResult(store, task, mediaType, index, context) {
       }
     }
     task.active_retry_feedback = null;
-    updateTaskStage(store, task, "quality_scoring", task.active_progress.score, `第 ${index + 1}/${imageCount} 张：正在进行商用品质评分`);
+    await updateTaskStage(task.id, "quality_scoring", task.active_progress.score, `第 ${index + 1}/${imageCount} 张：正在进行商用品质评分`);
   } else {
     aiResult = await generateTryOnVideo(task, context, index);
   }
@@ -268,94 +271,116 @@ async function createResult(store, task, mediaType, index, context) {
     },
     created_at: now()
   };
-  store.results.push(result);
   return result;
 }
 
 async function settleTask(taskId) {
-  const store = readStore();
-  const task = store.tasks.find(item => item.id === taskId);
+  // Read snapshot for compute-only data (garment, model, initial task state)
+  const storeSnapshot = readStore();
+  const task = storeSnapshot.tasks.find(item => item.id === taskId);
   if (!task || task.status === "completed" || task.status === "failed" || task.status === "cancelled") return;
 
   const imageCount = task.output_type === "image" || task.output_type === "image_video" ? Number(task.params?.image?.count || 4) : 0;
   const hasVideo = task.output_type === "video" || task.output_type === "image_video";
   const garmentReferenceImages = normalizeGarmentReferenceImages(task.params?.garment_references);
-  const garment = store.garments.find(item => item.id === task.garment_id);
+  const garment = storeSnapshot.garments.find(item => item.id === task.garment_id);
   const context = {
     garment: garment ? { ...garment, reference_images: garmentReferenceImages } : garment,
     garmentReferences: garmentReferenceImages,
-    model: findModelById(store, task.model_id),
+    model: findModelById(storeSnapshot, task.model_id),
     bestImageUrl: null
   };
+
+  // Generate results without touching the store
+  const collectedResults = [];
   for (let i = 0; i < imageCount; i += 1) {
-    const result = await createResult(store, task, "image", i, context);
+    const result = await createResult(storeSnapshot, task, "image", i, context);
+    collectedResults.push(result);
     if (i === 0) context.bestImageUrl = result.image_url;
   }
-  if (hasVideo) await createResult(store, task, "video", imageCount, context);
+  if (hasVideo) {
+    const videoResult = await createResult(storeSnapshot, task, "video", imageCount, context);
+    collectedResults.push(videoResult);
+  }
 
-  const taskResults = store.results.filter(result => result.task_id === task.id);
-  const recommended = taskResults.filter(result => result.quality_status === "recommended");
-  const usable = taskResults.filter(result => result.quality_status === "usable");
-  const repairNeeded = taskResults.filter(result => result.quality_status === "repair_needed");
-  const unusable = taskResults.filter(result => result.quality_status === "unusable");
-  const commercialPassed = recommended.length >= 1;
+  // Atomically write all results and mark task complete
+  await updateStore(store => {
+    const currentTask = store.tasks.find(t => t.id === taskId);
+    if (!currentTask || currentTask.status === "completed" || currentTask.status === "failed" || currentTask.status === "cancelled") return;
 
-  task.status = "completed";
-  task.progress = 100;
-  task.current_stage = "completed";
-  task.commercial_status = commercialPassed ? "passed" : "not_passed";
-  task.quality_summary = {
-    commercial_passed: commercialPassed,
-    recommended_count: recommended.length,
-    usable_count: usable.length,
-    repair_needed_count: repairNeeded.length,
-    unusable_count: unusable.length,
-    best_score: taskResults.reduce((max, result) => Math.max(max, Number(result.score || 0)), 0)
-  };
-  task.message = commercialPassed ? "生成完成，已筛出可商用推荐图" : "生成完成，但未达到商用推荐门槛，建议更换素材或切换商拍增强";
-  task.completed_at = now();
-  task.stage_timings.completed_at = task.completed_at;
-  addEvent(store, task.id, task.status, task.progress, task.message);
+    // Push all collected results
+    for (const r of collectedResults) {
+      store.results.push(r);
+    }
 
-  const log = store.credit_logs.find(item => item.task_id === task.id && item.reason === "precharge");
-  if (log) log.status = "settled";
-  writeStore(store);
+    const taskResults = store.results.filter(result => result.task_id === taskId);
+    const recommended = taskResults.filter(result => result.quality_status === "recommended");
+    const usable = taskResults.filter(result => result.quality_status === "usable");
+    const repairNeeded = taskResults.filter(result => result.quality_status === "repair_needed");
+    const unusable = taskResults.filter(result => result.quality_status === "unusable");
+    const commercialPassed = recommended.length >= 1;
+
+    currentTask.status = "completed";
+    currentTask.progress = 100;
+    currentTask.current_stage = "completed";
+    currentTask.commercial_status = commercialPassed ? "passed" : "not_passed";
+    currentTask.quality_summary = {
+      commercial_passed: commercialPassed,
+      recommended_count: recommended.length,
+      usable_count: usable.length,
+      repair_needed_count: repairNeeded.length,
+      unusable_count: unusable.length,
+      best_score: taskResults.reduce((max, result) => Math.max(max, Number(result.score || 0)), 0)
+    };
+    currentTask.message = commercialPassed ? "生成完成，已筛出可商用推荐图" : "生成完成，但未达到商用推荐门槛，建议更换素材或切换商拍增强";
+    currentTask.completed_at = now();
+    currentTask.stage_timings.completed_at = currentTask.completed_at;
+    addEvent(store, currentTask.id, currentTask.status, currentTask.progress, currentTask.message);
+
+    const log = store.credit_logs.find(item => item.task_id === taskId && item.reason === "precharge");
+    if (log) log.status = "settled";
+  });
 }
 
 function scheduleTask(taskId) {
   const store = readStore();
   const task = store.tasks.find(item => item.id === taskId);
   if (!task) return;
-  const flow = task.output_type === "video" ? STATUS_FLOW_VIDEO : task.output_type === "image_video" ? STATUS_FLOW_VIDEO : STATUS_FLOW_IMAGE;
+  const selectedTryonModel = String(task.params?.image?.tryon_model || "").toLowerCase();
+  const isGptImageTryon = selectedTryonModel === "gpt-image:try-on" || selectedTryonModel === "gpt-image";
+  let flow = task.output_type === "video" ? STATUS_FLOW_VIDEO : task.output_type === "image_video" ? STATUS_FLOW_VIDEO : STATUS_FLOW_IMAGE;
+  if (isGptImageTryon) {
+    flow = flow.filter(([status]) => !["pre_editing", "tryon_refining", "gpt_image_optimizing"].includes(status));
+  }
   flow.forEach(([status, progress, message], index) => {
     setTimeout(() => {
       if (status === "completed") {
         settleTask(taskId).catch(error => {
-          const current = readStore();
-          const item = current.tasks.find(row => row.id === taskId);
-          if (!item) return;
-          const normalized = normalizeProviderError(error);
-          item.status = "failed";
-          item.progress = 100;
-          item.current_stage = "failed";
-          item.failure_reason = normalized.providerMessage;
-          item.failure_detail = normalized;
-          item.message = normalized.userMessage;
-          addEvent(current, taskId, item.status, item.progress, `${normalized.userMessage} ${normalized.suggestion}`);
-          writeStore(current);
+          updateStore(store => {
+            const item = store.tasks.find(row => row.id === taskId);
+            if (!item) return;
+            const normalized = normalizeProviderError(error);
+            item.status = "failed";
+            item.progress = 100;
+            item.current_stage = "failed";
+            item.failure_reason = normalized.providerMessage;
+            item.failure_detail = normalized;
+            item.message = normalized.userMessage;
+            addEvent(store, taskId, item.status, item.progress, `${normalized.userMessage} ${normalized.suggestion}`);
+          });
         });
         return;
       }
-      const current = readStore();
-      const item = current.tasks.find(row => row.id === taskId);
-      if (!item || item.status === "cancelled") return;
-      item.status = status;
-      item.progress = progress;
-      item.current_stage = status;
-      item.message = message;
-      item.stage_timings[status] = now();
-      addEvent(current, taskId, status, progress, message);
-      writeStore(current);
+      updateStore(store => {
+        const item = store.tasks.find(row => row.id === taskId);
+        if (!item || item.status === "cancelled") return;
+        item.status = status;
+        item.progress = progress;
+        item.current_stage = status;
+        item.message = message;
+        item.stage_timings[status] = now();
+        addEvent(store, taskId, status, progress, message);
+      });
     }, index * 1400 + 300);
   });
 }

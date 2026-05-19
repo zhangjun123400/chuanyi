@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const fs = require("fs");
 const path = require("path");
 
 function requiredConfig() {
@@ -162,10 +163,27 @@ function isConfigured() {
   return Boolean(requiredConfig());
 }
 
+async function uploadLocalFileToOss({ filePath, fileName, folder = "uploads", tenantId = "tenant-demo" }) {
+  const buffer = fs.readFileSync(filePath);
+  const contentType = contentTypeFromPath(filePath);
+  return uploadBuffer({ buffer, fileName, contentType, folder, tenantId });
+}
+
+function contentTypeFromPath(filePath) {
+  const ext = path.extname(filePath || "").toLowerCase();
+  if (ext === ".png") return "image/png";
+  if (ext === ".webp") return "image/webp";
+  return "image/jpeg";
+}
+
 module.exports = {
   createUploadToken,
   createSignedUrl,
   createReadUrl,
   uploadDataUrl,
+  uploadBuffer,
+  uploadLocalFileToOss,
+  parseDataUrl,
+  extensionFromName,
   isConfigured
 };

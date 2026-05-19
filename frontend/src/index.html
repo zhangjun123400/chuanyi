@@ -4,25 +4,99 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI虚拟人穿衣 SaaS 工作台</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
-  <div class="app-shell">
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="login-overlay" style="display:none;">
+    <div class="login-split">
+      <!-- Left: Brand panel -->
+      <div class="login-brand-panel">
+        <div class="login-brand-content">
+          <div class="brand" style="justify-content:center;">
+            <div class="brand-mark"></div>
+            <div class="brand-text">
+              <strong>TryOn Studio</strong>
+              <span>AI虚拟人穿衣</span>
+            </div>
+          </div>
+          <p class="login-tagline">AI 驱动的电商虚拟试衣工作台<br>上传服装图即可生成模特试穿效果</p>
+          <div class="login-features">
+            <div class="login-feature-item">
+              <span class="login-feature-icon">&#10003;</span>
+              <span>多种 AI 试衣模型可选</span>
+            </div>
+            <div class="login-feature-item">
+              <span class="login-feature-icon">&#10003;</span>
+              <span>商用品质高清出图</span>
+            </div>
+            <div class="login-feature-item">
+              <span class="login-feature-icon">&#10003;</span>
+              <span>商品一致性质检保障</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Right: Login form -->
+      <div class="login-form-panel">
+        <div class="login-form-wrapper">
+          <h2>登录工作台</h2>
+          <p class="login-form-subtitle">请输入管理员分配的账号</p>
+          <form id="loginForm" class="login-form">
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">邮箱</label>
+              <input id="loginEmail" type="email" class="form-input" placeholder="admin@tryonstudio.local" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">密码</label>
+              <input id="loginPassword" type="password" class="form-input" placeholder="输入密码" required autocomplete="current-password">
+            </div>
+            <div class="flex items-center gap-sm" style="margin-top:var(--space-sm);">
+              <input id="loginRemember" type="checkbox" style="accent-color:var(--brand);">
+              <label for="loginRemember" class="text-sm" style="cursor:pointer;font-weight:400;" id="loginRememberHint">7 天内保持登录</label>
+            </div>
+            <div id="loginError" class="alert alert-danger hidden" style="margin-top:var(--space-md);"></div>
+            <button id="loginSubmitBtn" type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-md);">登录</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Shell (hidden until auth) -->
+  <div class="app-shell" id="appShell" style="display:none;">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark"></div>
-        <div>
+        <div class="brand-text">
           <strong>TryOn Studio</strong>
           <span>AI虚拟人穿衣</span>
         </div>
       </div>
       <nav class="nav">
-        <button class="nav-item active" data-tab="create">新建试穿任务</button>
-        <button class="nav-item" data-tab="history">任务历史</button>
-        <button class="nav-item" data-tab="results">结果管理</button>
-        <button class="nav-item" data-tab="models">系统模特库</button>
-        <button class="nav-item" data-tab="credits">设置</button>
+        <button class="nav-item active" data-tab="create"><span class="nav-dot"></span>智能试穿工作台</button>
+        <button class="nav-item" data-tab="progress"><span class="nav-dot"></span>任务进度</button>
+        <button class="nav-item" data-tab="history"><span class="nav-dot"></span>历史任务</button>
+        <button class="nav-item" data-tab="results"><span class="nav-dot"></span>结果管理</button>
+        <button class="nav-item" data-tab="models"><span class="nav-dot"></span>模特库</button>
+        <button class="nav-item" data-tab="credits"><span class="nav-dot"></span>模型与版本管理</button>
       </nav>
+      <div id="sidebarUser" class="sidebar-user hidden">
+        <div class="sidebar-user-info">
+          <span id="sidebarUserName" class="sidebar-user-name"></span>
+          <span id="sidebarUserRole" class="sidebar-user-role"></span>
+        </div>
+        <div class="sidebar-user-credit">
+          <span class="text-xs text-muted">可用额度</span>
+          <strong id="sidebarUserBalance">--</strong>
+        </div>
+        <div id="sidebarLoginExpiry" class="text-xs" style="color:var(--success);padding:4px 0;text-align:center;"></div>
+        <div class="sidebar-user-actions">
+          <button id="changePasswordBtn" class="btn btn-ghost btn-sm" style="width:100%;">修改密码</button>
+          <button id="logoutBtn" class="btn btn-ghost btn-sm" style="width:100%;color:var(--danger);">退出登录</button>
+        </div>
+      </div>
       <div class="side-card">
         <span>可用额度</span>
         <strong id="creditBalance">--</strong>
@@ -30,6 +104,7 @@
       </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="main">
       <header class="topbar">
         <div>
@@ -42,140 +117,148 @@
         </div>
       </header>
 
+      <!-- TAB: Create -->
       <section id="createTab" class="tab-panel active">
-        <div class="workflow">
-          <section class="panel upload-panel">
-            <div class="panel-title">
-              <div>
-                <h2>1. 上传服装图</h2>
-                <p>图片支持 5KB-20MB，系统会自动生成百炼模型合规图</p>
-              </div>
-              <span id="garmentState" class="badge muted">待上传</span>
-            </div>
-            <label class="upload-zone" for="garmentInput">
-              <input id="garmentInput" type="file" accept="image/jpeg,image/png,image/webp">
-              <div id="garmentPreview" class="preview empty">选择正面图</div>
-              <div>
-                <strong id="garmentName">上传服装正面图</strong>
-                <span id="garmentMeta">给试衣模型使用；这里请上传“衣服正面/平铺图”，不要上传真人模特</span>
-              </div>
-            </label>
-            <label class="upload-zone compact" for="garmentDetailInput">
-              <input id="garmentDetailInput" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-              <div class="preview small empty">细节图</div>
-              <div>
-                <strong>上传服装细节参考图</strong>
-                <span id="garmentDetailMeta">可上传背面、Logo、印花、面料、领口、袖口等；最多 10 张，仅用于最终商用出图</span>
-              </div>
-            </label>
-            <div id="garmentDetailGrid" class="detail-grid"></div>
-            <div id="garmentCategoryConfirm" class="category-confirm hidden">
-              <label>
-                <span>服装品类确认</span>
-                <select id="garmentCategorySelect" disabled>
-                  <optgroup label="上半身 / 内搭">
-                    <option value="camisole">吊带 / 背心</option>
-                    <option value="base_layer">打底衫</option>
-                    <option value="tshirt">T恤</option>
-                    <option value="shirt">衬衫 / 上衣</option>
-                    <option value="knitwear">针织衫 / 毛衣</option>
-                    <option value="hoodie">卫衣</option>
-                  </optgroup>
-                  <optgroup label="上半身 / 外套">
-                    <option value="jacket">夹克 / 牛仔外套 / 皮衣</option>
-                    <option value="coat">风衣 / 大衣</option>
-                    <option value="down_jacket">羽绒服</option>
-                    <option value="blazer">西装 / 开衫</option>
-                  </optgroup>
-                  <optgroup label="下半身">
-                    <option value="skirt">半身裙</option>
-                    <option value="shorts">短裤</option>
-                    <option value="pants">长裤 / 裤装</option>
-                    <option value="wide_leg_pants">阔腿裤 / 喇叭裤</option>
-                    <option value="leggings">紧身裤 / 瑜伽裤</option>
-                  </optgroup>
-                  <optgroup label="连身一体式">
-                    <option value="dress">连衣裙</option>
-                    <option value="jumpsuit">连体裤 / 连体衣</option>
-                    <option value="swimsuit">连身泳衣</option>
-                  </optgroup>
-                  <optgroup label="特殊品类">
-                    <option value="sleepwear">睡衣 / 家居服</option>
-                    <option value="underwear">内衣 / 塑身衣</option>
-                    <option value="sportswear">运动上衣 / 冲锋衣 / 防晒衣</option>
-                    <option value="formal_dress">婚纱 / 礼服</option>
-                    <option value="traditional">汉服 / 旗袍 / 和服</option>
-                    <option value="protective">围裙 / 实验服 / 雨衣</option>
-                  </optgroup>
-                </select>
-              </label>
-              <small id="garmentCategoryHint">上传后系统会先识别默认品类，提交前可人工确认。</small>
-            </div>
-            <div id="garmentAnalysis" class="analysis-grid"></div>
-          </section>
+        <!-- Stat Cards -->
+        <div class="stat-row" id="statCards">
+          <div class="stat-card"><div class="stat-value" id="statMonthlyTasks">--</div><div class="stat-label">本月任务数</div><div class="stat-change stat-up" id="statMonthlyChange"></div></div>
+          <div class="stat-card"><div class="stat-value" id="statSuccessRate">--</div><div class="stat-label">生成成功率</div><div class="stat-change stat-up" id="statRateChange"></div></div>
+          <div class="stat-card"><div class="stat-value" id="statAvailableCredits">--</div><div class="stat-label">可用额度</div><div class="stat-change text-muted" id="statCreditsUsed"></div></div>
+          <div class="stat-card"><div class="stat-value" id="statActiveTasks">--</div><div class="stat-label">进行中任务</div><div class="stat-change" id="statActiveLink"></div></div>
+        </div>
 
-          <section id="agentPanel" class="panel disabled-panel">
-            <div class="panel-title">
-              <div>
-                <h2>2. 选择虚拟人/模特</h2>
-                <p>可选择系统模特，也可上传真人模特图</p>
-              </div>
-              <span id="modelState" class="badge muted">待选择</span>
+        <div class="workflow-layout">
+        <div id="taskProgressModule" style="display:none;flex-direction:column;gap:var(--space-md);"></div>
+        <div class="workflow-main">
+          <!-- 1. 生成方案 -->
+          <div class="card">
+            <div class="card-header">
+              <div><h2>生成方案</h2><p>描述用途，Agent 自动推荐最优参数组合</p></div>
+              <span class="badge badge-info">AI Agent</span>
             </div>
-            <label class="upload-zone compact" for="modelInput">
-              <input id="modelInput" type="file" accept="image/jpeg,image/png,image/webp">
-              <div id="modelUploadPreview" class="preview small empty">上传真人</div>
-              <div>
-                <strong id="modelUploadName">上传真人/模特图片</strong>
-                <span id="modelUploadMeta">这里请上传“真人正面全身照”，不要上传衣服图</span>
+            <textarea id="intentInput" rows="3" placeholder="例如：适合 TikTok 上新的欧美模特短视频，同时生成商品图，需要街拍风格背景..." disabled></textarea>
+            <div class="flex items-center justify-between mt-md">
+              <div class="flex flex-wrap gap-sm" id="platformChips">
+                <button class="chip platform-chip" data-platform="商品图">商品图</button>
+                <button class="chip platform-chip" data-platform="TikTok短视频">TikTok 短视频</button>
+                <button class="chip platform-chip" data-platform="Instagram">Instagram</button>
+                <button class="chip platform-chip" data-platform="详情页图">详情页图</button>
+                <button class="chip platform-chip active" data-platform="Amazon">Amazon</button>
               </div>
-            </label>
-            <div id="modelGrid" class="model-grid"></div>
-          </section>
+              <select id="platformUse" class="hidden"><option value="Amazon" selected>Amazon</option><option value="商品图">商品图</option><option value="TikTok短视频">TikTok 短视频</option><option value="Instagram">Instagram</option><option value="详情页图">详情页图</option></select>
+              <button id="recommendBtn" class="btn btn-primary" disabled>生成推荐参数</button>
+            </div>
+            <div id="agentLockHint" class="hint-box mt-md">
+              当前不可编辑。只有开启"试衣前图改图"后，Agent 推荐参数才会解锁，并且这些参数只会传给试衣前图改图模型使用。
+            </div>
+          </div>
 
-          <section class="panel">
-            <div class="panel-title">
+          <!-- 2. 上传素材 -->
+          <div class="card">
+            <div class="card-header">
+              <div><h2>上传素材</h2><p>上传服装图与模特图，系统自动预检</p></div>
+              <span id="garmentState" class="badge badge-muted">待上传</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+              <!-- Garment -->
               <div>
-                <h2>3. Agent 推荐参数</h2>
-                <p>输入用途，自动推荐画幅、背景、视频模板和风险提示</p>
+                <label class="upload-zone" for="garmentInput">
+                  <input id="garmentInput" type="file" accept="image/jpeg,image/png,image/webp">
+                  <div id="garmentPreview" class="preview empty"></div>
+                  <div>
+                    <strong id="garmentName" style="display:block;font-size:14px;">上传服装正面图</strong>
+                    <span id="garmentMeta" class="text-xs text-muted">JPG/PNG/WebP · 5KB-20MB · 衣服正面/平铺图</span>
+                  </div>
+                </label>
+                <label class="upload-zone compact" for="garmentDetailInput" style="margin-top:var(--space-sm);">
+                  <input id="garmentDetailInput" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+                  <div class="preview small empty"></div>
+                  <div>
+                    <strong style="display:block;font-size:14px;">上传服装细节参考图</strong>
+                    <span id="garmentDetailMeta" class="text-xs text-muted">背面、Logo、印花、面料等；最多10张</span>
+                  </div>
+                </label>
+                <div id="garmentDetailGrid" class="detail-grid"></div>
+                <div id="garmentCategoryConfirm" class="category-confirm hidden">
+                  <label>
+                    <span>服装品类确认</span>
+                    <select id="garmentCategorySelect" disabled>
+                      <optgroup label="上半身 / 内搭">
+                        <option value="camisole">吊带 / 背心</option>
+                        <option value="base_layer">打底衫</option>
+                        <option value="tshirt">T恤</option>
+                        <option value="shirt">衬衫 / 上衣</option>
+                        <option value="knitwear">针织衫 / 毛衣</option>
+                        <option value="hoodie">卫衣</option>
+                      </optgroup>
+                      <optgroup label="上半身 / 外套">
+                        <option value="jacket">夹克 / 牛仔外套 / 皮衣</option>
+                        <option value="coat">风衣 / 大衣</option>
+                        <option value="down_jacket">羽绒服</option>
+                        <option value="blazer">西装 / 开衫</option>
+                      </optgroup>
+                      <optgroup label="下半身">
+                        <option value="skirt">半身裙</option>
+                        <option value="shorts">短裤</option>
+                        <option value="pants">长裤 / 裤装</option>
+                        <option value="wide_leg_pants">阔腿裤 / 喇叭裤</option>
+                        <option value="leggings">紧身裤 / 瑜伽裤</option>
+                      </optgroup>
+                      <optgroup label="连身一体式">
+                        <option value="dress">连衣裙</option>
+                        <option value="jumpsuit">连体裤 / 连体衣</option>
+                        <option value="swimsuit">连身泳衣</option>
+                      </optgroup>
+                      <optgroup label="特殊品类">
+                        <option value="sleepwear">睡衣 / 家居服</option>
+                        <option value="underwear">内衣 / 塑身衣</option>
+                        <option value="sportswear">运动上衣 / 冲锋衣 / 防晒衣</option>
+                        <option value="formal_dress">婚纱 / 礼服</option>
+                        <option value="traditional">汉服 / 旗袍 / 和服</option>
+                        <option value="protective">围裙 / 实验服 / 雨衣</option>
+                      </optgroup>
+                    </select>
+                  </label>
+                  <small id="garmentCategoryHint">上传后系统会先识别默认品类，提交前可人工确认。</small>
+                </div>
+                <div id="garmentAnalysis" class="analysis-grid"></div>
               </div>
-              <button id="recommendBtn" class="secondary-btn" disabled>生成推荐</button>
+              <!-- Model -->
+              <div>
+                <label class="upload-zone" for="modelInput">
+                  <input id="modelInput" type="file" accept="image/jpeg,image/png,image/webp">
+                  <div id="modelUploadPreview" class="preview small empty"></div>
+                  <div>
+                    <strong id="modelUploadName" style="display:block;font-size:14px;">上传真人/模特图片</strong>
+                    <span id="modelUploadMeta" class="text-xs text-muted">JPG/PNG/WebP · 真人正面全身照</span>
+                  </div>
+                </label>
+                <div class="flex items-center gap-sm mt-sm" style="justify-content:space-between;">
+                  <span class="text-xs text-muted">或从模特库快速选择：</span>
+                  <button class="btn btn-ghost btn-sm" id="browseAllModelsBtn">浏览全部 →</button>
+                </div>
+                <span id="modelState" class="badge badge-muted" style="margin-top:var(--space-sm);">待选择</span>
+                <div id="modelGrid" class="model-grid" style="margin-top:var(--space-sm);"></div>
+              </div>
             </div>
-            <textarea id="intentInput" rows="4" placeholder="例如：适合 TikTok 上新的欧美模特短视频，同时生成商品图" disabled></textarea>
-            <div id="agentLockHint" class="hint-box">
-              当前不可编辑。只有开启“试衣前图改图”后，Agent 推荐参数才会解锁，并且这些参数只会传给试衣前图改图模型使用。
-            </div>
-            <div class="form-row">
-              <label>
-                平台用途
-                <select id="platformUse">
-                  <option>商品图</option>
-                  <option>社媒图</option>
-                  <option>详情页图</option>
-                  <option>TikTok短视频</option>
-                  <option>Instagram</option>
-                  <option>Amazon</option>
-                </select>
-              </label>
-              <label>
-                输出类型
-                <select id="outputType">
-                  <option value="image">图片</option>
-                  <option value="video">30秒视频</option>
-                  <option value="image_video">图片+视频</option>
-                </select>
-              </label>
-            </div>
-            <div id="recommendation" class="recommendation empty">试衣前图改图已默认关闭，Agent 推荐参数暂不可编辑，避免运营要求影响服装原图一致性。</div>
-          </section>
+            <div id="garmentAlert" class="alert alert-success mt-md hidden"></div>
+          </div>
 
-          <section class="panel">
-            <div class="panel-title">
-              <div>
-                <h2>4. 参数确认</h2>
-                <p>所有 Agent 推荐值都可以人工修改</p>
-              </div>
-              <span id="costPreview" class="badge blue">预计 8 额度</span>
+          <!-- 3. 品质预检 -->
+          <div class="card">
+            <div class="card-header">
+              <div><h2>品质预检 Preflight</h2><p>阻断项不允许提交，风险项进入质量评分</p></div>
+              <span id="preflightState" class="badge badge-muted">待检查</span>
+            </div>
+            <div id="apiCapability" class="capability-card"></div>
+            <div id="preflightChecks" class="check-list"></div>
+          </div>
+
+          <!-- 4. 参数确认 -->
+          <div class="card">
+            <div class="card-header">
+              <div><h2>参数确认</h2><p>Agent 推荐值可人工调整</p></div>
+              <span id="costPreview" class="badge badge-blue">预计 8 额度</span>
             </div>
             <div class="settings-grid">
               <label>生成数量
@@ -191,6 +274,30 @@
               <label>图片背景
                 <select id="imageBackground">
                   <option>干净棚拍</option><option>白底</option><option>浅灰</option><option>室内</option><option>街拍</option><option>纯色</option>
+                </select>
+              </label>
+              <label>试衣模型
+                <select id="tryonModel">
+                  <option value="gpt-image:try-on">GPT-Image 1.5 · 直接试衣</option>
+                  <option value="pixelcut:try-on" selected>Pixelcut Try-On · 当前主测</option>
+                  <option value="302:fashn-tryon">302.AI FASHN Try-On · 备选</option>
+                  <option value="aliyun:aitryon-plus">百炼 AI 试衣 Plus · 备选</option>
+                  <option value="pixazo:fashn-vton">Pixazo Fashn VTON · 中转备选</option>
+                  <option value="replicate:idm-vton">Replicate IDM-VTON · 实验模型</option>
+                </select>
+              </label>
+              <label>品质链路
+                <select id="qualityStrategy">
+                  <option value="preview">快速预览 · 低成本初筛</option>
+                  <option value="commercial" selected>商用品质 · 多候选+精修+质检</option>
+                  <option value="studio">商拍增强 · 更严格门槛</option>
+                </select>
+              </label>
+              <label>出图模型
+                <select id="postOptimizeModel">
+                  <option value="gpt-image-1.5" selected>gpt-image-1.5 · 高质量最终图</option>
+                  <option value="gpt-image-1">gpt-image-1 · 稳定通用</option>
+                  <option value="gpt-image-1-mini">gpt-image-1-mini · 低成本预览</option>
                 </select>
               </label>
               <label>视频时长
@@ -218,46 +325,11 @@
                   <option selected>开启</option><option>关闭</option>
                 </select>
               </label>
-              <label>品质链路
-                <select id="qualityStrategy">
-                  <option value="preview">快速预览 · 低成本初筛</option>
-                  <option value="commercial" selected>商用品质 · 多候选+精修+质检</option>
-                  <option value="studio">商拍增强 · 更严格门槛</option>
-                </select>
-              </label>
-              <label>试衣模型
-                <select id="tryonModel">
-                  <option value="gpt-image:try-on">GPT-Image 1.5 · 直接试衣</option>
-                  <option value="pixelcut:try-on" selected>Pixelcut Try-On · 当前主测</option>
-                  <option value="302:fashn-tryon">302.AI FASHN Try-On · 备选</option>
-                  <option value="aliyun:aitryon-plus">百炼 AI 试衣 Plus · 备选</option>
-                  <option value="pixazo:fashn-vton">Pixazo Fashn VTON · 中转备选</option>
-                  <option value="replicate:idm-vton">Replicate IDM-VTON · 实验模型</option>
-                </select>
-              </label>
-              <label>试衣前图改图
-                <select id="preEditEnabled">
-                  <option value="true">开启</option>
-                  <option value="false" selected>关闭</option>
-                </select>
-              </label>
-              <label>试衣图精修
-                <select id="refinerEnabled">
-                  <option value="true">开启</option>
-                  <option value="false" selected>关闭</option>
-                </select>
-              </label>
-              <label>最终商用出图
-                <select id="postOptimizeEnabled">
-                  <option value="true" selected>开启</option>
-                  <option value="false">关闭</option>
-                </select>
-              </label>
-              <label>出图模型
-                <select id="postOptimizeModel">
-                  <option value="gpt-image-1.5" selected>gpt-image-1.5 · 高质量最终图</option>
-                  <option value="gpt-image-1">gpt-image-1 · 稳定通用</option>
-                  <option value="gpt-image-1-mini">gpt-image-1-mini · 低成本预览</option>
+              <label>输出类型
+                <select id="outputType">
+                  <option value="image">图片</option>
+                  <option value="video">30秒视频</option>
+                  <option value="image_video">图片+视频</option>
                 </select>
               </label>
               <label class="wide-field">试衣前图改图模型
@@ -268,92 +340,172 @@
                 </select>
               </label>
             </div>
-            <label class="prompt-field">最终商用出图要求
-              <textarea id="postOptimizePrompt" rows="4" placeholder="商品一致性是铁律：颜色、版型比例、衣长、装饰细节和纹理必须与原服装图一致；在此前提下要求图片高保真，尽全力提升清晰度。"></textarea>
+
+            <!-- Toggle switches -->
+            <div class="flex items-center gap-lg mt-md" style="padding-top:var(--space-md);border-top:1px solid var(--gray-100);">
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">试衣前图改图</span>
+                <button class="toggle" id="togglePreEdit" role="switch" aria-checked="false" data-target="preEditEnabled"></button>
+                <select id="preEditEnabled" class="hidden">
+                  <option value="false" selected>关闭</option>
+                  <option value="true">开启</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">试衣图精修</span>
+                <button class="toggle" id="toggleRefiner" role="switch" aria-checked="false" data-target="refinerEnabled"></button>
+                <select id="refinerEnabled" class="hidden">
+                  <option value="false" selected>关闭</option>
+                  <option value="true">开启</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-sm">
+                <span class="text-sm">最终商用出图</span>
+                <button class="toggle on" id="togglePostOptimize" role="switch" aria-checked="true" data-target="postOptimizeEnabled"></button>
+                <select id="postOptimizeEnabled" class="hidden">
+                  <option value="true" selected>开启</option>
+                  <option value="false">关闭</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="prompt-field" style="margin-top:var(--space-md);">最终商用出图要求
+              <textarea id="postOptimizePrompt" rows="3" placeholder="商品一致性是铁律：颜色、版型比例、衣长、装饰细节和纹理必须与原服装图一致；在此前提下要求图片高保真，尽全力提升清晰度。"></textarea>
             </label>
-            <div id="preEditHint" class="hint-box">
+
+            <!-- Hint boxes -->
+            <div id="preEditHint" class="hint-box mt-md">
               当前选择：轻量保守编辑。适合清洁背景、轻微提亮、去水印、保留服装细节，成本相对可控。
             </div>
-            <div id="refinerHint" class="hint-box">
-              已开启试衣图精修。基础试衣生效后，会继续修复服装边缘、融合关系和清晰度。
+            <div id="refinerHint" class="hint-box mt-md">
+              已关闭试衣图精修。系统会跳过该环节，减少耗时和成本，但清晰度与融合自然度可能下降。
             </div>
-            <div id="postOptimizeHint" class="hint-box">
+            <div id="postOptimizeHint" class="hint-box mt-md">
               试衣结果生成后会再做最终商用出图，重点提高清晰度、细节和自然度。
             </div>
-            <div id="qualityStrategyHint" class="hint-box">
+            <div id="qualityStrategyHint" class="hint-box mt-md">
               商用品质链路会生成至少 4 张候选图，并执行质量评分、精修和高清下载门槛。
             </div>
-            <button id="submitTaskBtn" class="primary-btn" disabled>提交生成任务</button>
-          </section>
 
-          <section class="panel">
-            <div class="panel-title">
-              <div>
-                <h2>5. 商用品质生成前预检</h2>
-                <p>阻断项不允许提交，风险项会进入质量评分和推荐筛选</p>
-              </div>
-              <span id="preflightState" class="badge muted">待检查</span>
-            </div>
-            <div id="apiCapability" class="capability-card"></div>
-            <div id="preflightChecks" class="check-list"></div>
-          </section>
+            <div id="recommendation" class="recommendation empty">试衣前图改图已默认关闭，Agent 推荐参数暂不可编辑，避免运营要求影响服装原图一致性。</div>
+          </div>
         </div>
 
-        <aside class="result-column">
-          <section class="panel sticky">
-            <div class="panel-title">
-              <div>
-                <h2>当前任务</h2>
-                <p>状态可恢复，页面刷新后可在历史查看</p>
-              </div>
-            </div>
-            <div id="currentTask" class="task-empty">暂无任务</div>
-            <div id="resultGallery" class="result-gallery"></div>
-          </section>
+        <!-- Task Summary Sidebar -->
+        <aside class="card sticky">
+          <div class="card-header">
+            <div><h2>任务摘要</h2><p>提交前最终确认</p></div>
+          </div>
+          <div id="currentTask" class="task-empty">暂无任务</div>
+          <div id="resultGallery" class="result-gallery"></div>
+          <button id="submitTaskBtn" class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-md);" disabled>提交生成任务</button>
+          <div id="submitHint" class="alert alert-info mt-md" style="font-size:12px;">提交后预扣额度，失败按规则返还。预计 90-180 秒完成。</div>
         </aside>
+        </div><!-- /workflow-layout -->
       </section>
 
+      <!-- TAB: Progress -->
+      <section id="progressTab" class="tab-panel">
+        <div class="stat-row" id="progressStats">
+          <div class="stat-card"><div class="stat-value" id="statProgressActive">--</div><div class="stat-label">进行中任务</div></div>
+          <div class="stat-card"><div class="stat-value" id="statProgressToday">--</div><div class="stat-label">今日完成</div></div>
+          <div class="stat-card"><div class="stat-value" id="statProgressRate">--</div><div class="stat-label">成功率</div></div>
+          <div class="stat-card"><div class="stat-value" id="statProgressAvg">--</div><div class="stat-label">平均耗时</div></div>
+        </div>
+        <div id="progressModule" class="workflow-layout">
+          <div id="progressMain" class="workflow-main" style="display:flex;flex-direction:column;gap:var(--space-md);">
+            <div class="empty-state"><div class="empty-icon">⏳</div><strong>暂无进行中任务</strong><p>提交生成任务后将在此处显示实时进度</p></div>
+          </div>
+          <div id="progressSidebar"></div>
+        </div>
+      </section>
+
+      <!-- TAB: History -->
       <section id="historyTab" class="tab-panel">
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>任务历史</h2>
-              <p>展示图片、视频、组合任务和阶段状态</p>
+        <div class="card mb-md">
+          <div class="flex items-center gap-md flex-wrap">
+            <div class="flex gap-sm" id="historyFilters">
+              <button class="chip active" data-history-filter="all">全部</button>
+              <button class="chip" data-history-filter="completed">已完成</button>
+              <button class="chip" data-history-filter="processing">生成中</button>
+              <button class="chip" data-history-filter="failed">失败</button>
+              <button class="chip" data-history-filter="cancelled">已取消</button>
             </div>
-            <button id="refreshTasksBtn" class="secondary-btn">刷新</button>
+            <div style="margin-left:auto;display:flex;gap:var(--space-sm);align-items:center;">
+              <button id="batchDeleteTasksBtn" class="btn btn-danger btn-sm" disabled>删除选中</button>
+              <input type="search" id="taskSearchInput" placeholder="搜索任务 ID ..." style="width:200px;">
+              <button id="refreshTasksBtn" class="btn btn-secondary btn-sm">刷新</button>
+            </div>
           </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
           <div id="taskHistory" class="table-list"></div>
-        </section>
+        </div>
       </section>
 
+      <!-- TAB: Results -->
       <section id="resultsTab" class="tab-panel">
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>结果管理</h2>
-              <p>按商用质量分级管理素材，未达门槛的图片不进入高清下载</p>
+        <div class="stat-row" id="resultStats">
+          <div class="stat-card"><div class="stat-value" id="statTotalResults">--</div><div class="stat-label">生成结果总数</div></div>
+          <div class="stat-card"><div class="stat-value stat-up" id="statRecommended">--</div><div class="stat-label">推荐 (质量分 ≥ 85)</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:var(--brand);" id="statUsable">--</div><div class="stat-label">可用 (质量分 75-84)</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:var(--warning);" id="statRepairNeeded">--</div><div class="stat-label">待修复 (质量分 60-74)</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><h2>结果列表</h2><p>点击图片查看大图与详细参数</p></div>
+            <div class="flex gap-sm" id="resultChips">
+              <button class="chip active" data-result-filter="all">全部</button>
+              <button class="chip" data-result-filter="recommended">推荐</button>
+              <button class="chip" data-result-filter="usable">可用</button>
+              <button class="chip" data-result-filter="repair_needed">待修复</button>
+              <button class="chip" data-result-filter="unusable">不可用</button>
             </div>
-            <button id="refreshResultsBtn" class="secondary-btn">刷新</button>
           </div>
-          <div class="result-toolbar">
-            <button class="filter-chip active" data-result-filter="all">全部</button>
-            <button class="filter-chip" data-result-filter="recommended">推荐</button>
-            <button class="filter-chip" data-result-filter="usable">可用</button>
-            <button class="filter-chip" data-result-filter="repair_needed">待修复</button>
-            <button class="filter-chip" data-result-filter="unusable">不可用</button>
+          <div class="flex items-center justify-between mb-md">
+            <div class="flex gap-sm">
+              <button id="selectAllResultsBtn" class="btn btn-ghost btn-sm">全选</button>
+              <button id="batchDownloadResultsBtn" class="btn btn-primary btn-sm" disabled>批量下载选中</button>
+              <button id="batchDeleteResultsBtn" class="btn btn-danger btn-sm" disabled>批量删除选中</button>
+            </div>
+            <button id="refreshResultsBtn" class="btn btn-secondary btn-sm">刷新</button>
           </div>
           <div id="resultManager" class="managed-results"></div>
-        </section>
+        </div>
       </section>
 
+      <!-- TAB: Models -->
       <section id="modelsTab" class="tab-panel">
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>系统模特库</h2>
-              <p>新增、修改、移除后会同步到新建任务页的模特选择区</p>
+        <div class="card mb-md">
+          <div class="flex items-center gap-md flex-wrap">
+            <div class="flex gap-sm" id="modelLibraryFilters">
+              <button class="chip active" data-model-gender="all">全部</button>
+              <button class="chip" data-model-gender="female">女模特</button>
+              <button class="chip" data-model-gender="male">男模特</button>
+              <button class="chip" data-model-gender="unknown">不限</button>
+            </div>
+            <div class="flex gap-sm" style="margin-left:auto;">
+              <select id="libraryBodyFilter" class="form-select" style="width:120px;">
+                <option value="all">全部体型</option>
+                <option value="slim">slim</option>
+                <option value="regular">regular</option>
+                <option value="athletic">athletic</option>
+                <option value="plus_size">plus_size</option>
+              </select>
+              <select id="libraryPoseFilter" class="form-select" style="width:140px;">
+                <option value="all">全部姿态</option>
+                <option value="full_body_standing">全身站立</option>
+                <option value="half_body">半身</option>
+                <option value="walking">走动</option>
+                <option value="side_view">侧身</option>
+              </select>
+              <button id="resetLibraryFormBtn" class="btn btn-primary btn-sm">+ 新增模特</button>
             </div>
           </div>
+        </div>
+        <div id="modelLibrary" class="card-grid"></div>
+        <div class="card mt-lg">
+          <div class="card-header"><div><h2>模特编辑</h2></div></div>
           <form id="modelLibraryForm" class="model-admin-form">
             <input id="modelEditId" type="hidden">
             <label>模特图片
@@ -399,39 +551,36 @@
               </div>
             </div>
             <div class="model-admin-actions">
-              <button id="saveLibraryModelBtn" class="primary-btn" type="submit">保存模特</button>
-              <button id="cancelLibraryModelBtn" class="secondary-btn" type="button">取消编辑</button>
+              <button id="saveLibraryModelBtn" class="btn btn-primary" type="submit">保存模特</button>
+              <button id="cancelLibraryModelBtn" class="btn btn-secondary" type="button">取消编辑</button>
             </div>
           </form>
-          <div id="modelLibrary" class="model-grid large"></div>
-        </section>
+        </div>
       </section>
 
+      <!-- TAB: Settings (Credits + Model Stack) -->
       <section id="creditsTab" class="tab-panel">
-        <section class="panel model-stack-panel">
-          <div class="panel-title">
-            <div>
-              <h2>模型与版本</h2>
-              <p>当前项目生成链路中启用的大模型，便于测试和业务方说明</p>
+        <!-- Model Stack with sub-nav -->
+        <div class="card mb-lg">
+          <div class="card-header"><div><h2>模型与版本</h2><p>当前项目生成链路中启用的大模型，便于测试和业务方说明</p></div></div>
+          <div id="modelStack" class="model-stack">
+            <div class="model-stack-nav" id="modelStackNav">
+              <!-- Populated by JS -->
+            </div>
+            <div class="model-stack-content" id="modelStackContent">
+              <!-- Populated by JS -->
             </div>
           </div>
-          <div id="modelStack" class="model-stack"></div>
-        </section>
+        </div>
 
-        <section class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>设置</h2>
-              <p>任务提交预扣，完成后结算，失败按规则返还</p>
-            </div>
-          </div>
-          <div id="creditLogs" class="table-list"></div>
-        </section>
       </section>
     </main>
   </div>
 
+  <!-- Toast -->
   <div id="toast" class="toast"></div>
+
+  <!-- Media Modal -->
   <div id="mediaModal" class="media-modal" aria-hidden="true">
     <div class="media-modal-backdrop" data-close-modal></div>
     <div class="media-modal-body">
@@ -439,6 +588,43 @@
       <div id="mediaModalContent"></div>
     </div>
   </div>
-  <script src="./app.js"></script>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="media-modal" aria-hidden="true">
+    <div class="media-modal-backdrop" data-close-pwd-modal></div>
+    <div class="media-modal-body" style="max-width:420px;">
+      <button class="modal-close" data-close-pwd-modal>关闭</button>
+      <h2 style="margin-bottom:var(--space-lg);">修改密码</h2>
+      <form id="changePasswordForm">
+        <div class="form-group">
+          <label class="form-label" for="oldPassword">当前密码</label>
+          <input id="oldPassword" type="password" class="form-input" required autocomplete="current-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newPassword">新密码</label>
+          <input id="newPassword" type="password" class="form-input" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">确认新密码</label>
+          <input id="confirmPassword" type="password" class="form-input" required minlength="6" autocomplete="new-password">
+        </div>
+        <div id="changePasswordError" class="alert alert-danger hidden" style="margin-top:var(--space-md);"></div>
+        <button id="changePasswordSubmitBtn" type="submit" class="btn btn-primary" style="width:100%;margin-top:var(--space-md);">更新密码</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Changed Transition Overlay -->
+  <div id="passwordChangedOverlay" class="transition-overlay hidden">
+    <div class="transition-card">
+      <div class="transition-icon">✓</div>
+      <h2>密码已修改</h2>
+      <p>为保障账号安全，所有设备已退出登录</p>
+      <p id="passwordChangedCountdown" class="text-xs text-muted" style="margin-top:var(--space-sm);">3 秒后自动跳转登录页...</p>
+      <button id="passwordChangedLoginBtn" class="btn btn-primary btn-lg" style="margin-top:var(--space-lg);">立即登录</button>
+    </div>
+  </div>
+
+  <script src="./app.js?v=6"></script>
 </body>
 </html>

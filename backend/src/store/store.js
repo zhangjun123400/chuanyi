@@ -61,7 +61,7 @@ function ensureStore() {
   if (!fs.existsSync(DB_FILE)) {
     const nowStr = now();
     const initial = {
-      tenants: [{ id: "tenant-demo", name: "Demo Fashion Studio", plan: "pro" }],
+      tenants: [{ id: "tenant-demo", name: "Demo Fashion Studio", plan: "pro", created_at: nowStr, updated_at: nowStr }],
       users: [{ id: "user-demo", tenant_id: "tenant-demo", name: "运营演示账号", credit_balance: 1200 }],
       garments: [],
       model_assets: [],
@@ -69,6 +69,9 @@ function ensureStore() {
       results: [],
       credit_logs: [],
       events: [],
+      refresh_token_blacklist: [],
+      admin_audit_logs: [],
+      login_lockouts: {},
       created_at: nowStr,
       updated_at: nowStr
     };
@@ -78,19 +81,165 @@ function ensureStore() {
 
 function readStore() {
   ensureStore();
-  return ensureStoreShape(JSON.parse(fs.readFileSync(DB_FILE, "utf8")));
+  const raw = fs.readFileSync(DB_FILE, "utf8");
+  const store = JSON.parse(raw);
+  return ensureStoreShape(store);
+}
+
+function cleanExpiredTokens(store) {
+  const nowStr = now();
+  store.refresh_token_blacklist = (store.refresh_token_blacklist || []).filter(
+    entry => entry.expires_at > nowStr
+  );
+}
+
+function cleanExpiredLockouts(store) {
+  const nowStr = now();
+  if (store.login_lockouts) {
+    for (const [key, entry] of Object.entries(store.login_lockouts)) {
+      if (entry.locked_until && entry.locked_until <= nowStr) {
+        delete store.login_lockouts[key];
+      }
+    }
+  }
+}
+
+function trimEvents(store) {
+  const MAX_EVENTS = 500;
+  if (store.events && store.events.length > MAX_EVENTS) {
+    store.events = store.events.slice(store.events.length - MAX_EVENTS);
+  }
 }
 
 function writeStore(store) {
   store.model_assets = store.model_assets || [];
   store.model_library_changes = store.model_library_changes || [];
+  store.refresh_token_blacklist = store.refresh_token_blacklist || [];
+  store.admin_audit_logs = store.admin_audit_logs || [];
+  store.login_lockouts = store.login_lockouts || {};
+  cleanExpiredTokens(store);
+  cleanExpiredLockouts(store);
+  trimEvents(store);
   store.updated_at = now();
   fs.writeFileSync(DB_FILE, JSON.stringify(store, null, 2));
 }
 
+// Promise-based mutex for serializing write operations.
+let writeMutex = Promise.resolve();
+
+function updateStore(updater) {
+  const prev = writeMutex;
+  let release;
+  writeMutex = new Promise(resolve => { release = resolve; });
+
+  return prev.then(() => {
+    const store = readStore();
+    const result = updater(store);
+    return Promise.resolve(result).then(value => {
+      writeStore(store);
+      release();
+      return value;
+    });
+  }).catch(err => {
+    release();
+    throw err;
+  });
+}
+
+// ── v2.0: User lookup helpers ──
+
+function findUserByEmail(store, email) {
+  return (store.users || []).find(u => u.email === email);
+}
+
+function countAdmins(store) {
+  return (store.users || []).filter(u => u.role === "admin" && u.status === "active").length;
+}
+
+// ── v2.0: Seed default admin ──
+
+function seedAdmin(store) {
+  store.users = store.users || [];
+  if (store.users.some(u => u.email === "admin@tryonstudio.local")) return null;
+
+  const bcrypt = require("bcryptjs");
+  const password = crypto.randomBytes(8).toString("hex");
+  const hash = bcrypt.hashSync(password, 10);
+  const nowStr = now();
+
+  const adminUser = {
+    id: id("user"),
+    tenant_id: "tenant-demo",
+    email: "admin@tryonstudio.local",
+    name: "系统管理员",
+    password_hash: hash,
+    role: "admin",
+    status: "active",
+    credit_balance: 1200,
+    token_version: 1,
+    last_login_at: null,
+    created_at: nowStr,
+    updated_at: nowStr
+  };
+
+  store.users.push(adminUser);
+
+  const credPath = path.join(__dirname, "..", "..", ".admin-credentials");
+  fs.writeFileSync(credPath, `admin@tryonstudio.local\n${password}\n`);
+  try { fs.chmodSync(credPath, 0o600); } catch (_) { /* best effort */ }
+
+  console.log("初始管理员密码已写入 .admin-credentials，请妥善保存。首次登录后建议立即修改密码。");
+
+  return { email: adminUser.email, password };
+}
+
+// ── v2.0: Backward-compatible migration ──
+
 function ensureStoreShape(store) {
   store.model_assets = store.model_assets || [];
   store.model_library_changes = store.model_library_changes || [];
+  store.refresh_token_blacklist = store.refresh_token_blacklist || [];
+  store.admin_audit_logs = store.admin_audit_logs || [];
+  store.login_lockouts = store.login_lockouts || {};
+  store.garments = store.garments || [];
+  store.tasks = store.tasks || [];
+  store.results = store.results || [];
+  store.credit_logs = store.credit_logs || [];
+  store.events = store.events || [];
+
+  const nowStr = now();
+
+  // Migrate tenants
+  (store.tenants || []).forEach(t => {
+    if (!t.created_at) t.created_at = store.created_at || nowStr;
+    if (!t.updated_at) t.updated_at = store.updated_at || nowStr;
+  });
+
+  // Migrate users
+  (store.users || []).forEach(u => {
+    if (!u.email) u.email = `user_${u.id}@auto.local`;
+    if (!u.password_hash) {
+      const bcrypt = require("bcryptjs");
+      u.password_hash = bcrypt.hashSync(crypto.randomBytes(8).toString("hex"), 10);
+    }
+    if (!u.role) u.role = "admin";
+    if (!u.status) u.status = "active";
+    if (!u.token_version) u.token_version = 1;
+    if (u.last_login_at === undefined) u.last_login_at = null;
+    if (!u.created_at) u.created_at = nowStr;
+    if (!u.updated_at) u.updated_at = nowStr;
+  });
+
+  // Migrate data: fill missing user_id
+  [store.garments, store.model_assets, store.tasks, store.credit_logs].forEach(arr => {
+    (arr || []).forEach(item => {
+      if (!item.user_id) item.user_id = "user-demo";
+    });
+  });
+
+  // Seed admin if no users exist
+  seedAdmin(store);
+
   return store;
 }
 
@@ -165,7 +314,8 @@ function addEvent(store, taskId, status, progress, message) {
 }
 
 module.exports = {
-  id, now, ensureStore, readStore, writeStore, ensureStoreShape,
+  id, now, ensureStore, readStore, writeStore, updateStore, ensureStoreShape,
   parseCategories, withFreshAssetReadUrl, modelLibrary, findModelById,
-  normalizeModelPayload, addEvent, SYSTEM_MODELS
+  normalizeModelPayload, addEvent, SYSTEM_MODELS,
+  findUserByEmail, countAdmins, seedAdmin, cleanExpiredTokens
 };

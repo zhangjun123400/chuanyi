@@ -139,6 +139,10 @@ function localMediaPathFromUrl(value) {
   if (value.startsWith(generatedPrefix)) {
     return path.join(GENERATED_DIR, path.basename(value));
   }
+  const uploadsMatch = value.match(/^\/v1\/media\/(uploads|models)\/([^/]+)$/);
+  if (uploadsMatch) {
+    return path.join(GENERATED_DIR, "..", uploadsMatch[1], path.basename(uploadsMatch[2]));
+  }
   return null;
 }
 

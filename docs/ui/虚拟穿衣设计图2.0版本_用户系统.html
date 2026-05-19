@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI虚拟试衣SaaS · 用户系统 v2.0 UI/UE 设计稿</title>
+<style>
+/* ===== Design Tokens ===== */
+:root {
+  --brand: #2D6CF6;
+  --brand-light: #E8F0FE;
+  --brand-dark: #1A4FC9;
+  --success: #12B76A;
+  --success-light: #ECFDF5;
+  --warning: #F59E0B;
+  --warning-light: #FFFCF0;
+  --danger: #EF4444;
+  --danger-light: #FEF2F2;
+  --info: #6366F1;
+  --info-light: #EEF2FF;
+
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-tertiary: #9CA3AF;
+  --text-placeholder: #D1D5DB;
+  --text-white: #FFFFFF;
+
+  --bg-white: #FFFFFF;
+  --bg-page: #F3F4F6;
+  --bg-hover: #F9FAFB;
+  --bg-active: #F3F4F6;
+  --bg-sidebar: #0B1120;
+  --bg-sidebar-hover: #1F2937;
+  --bg-sidebar-active: #111827;
+
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --border-focus: #2D6CF6;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --shadow-xl: 0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.06);
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  --sidebar-w: 220px;
+  --topbar-h: 56px;
+}
+
+/* ===== Reset ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: #F0F2F5;
+  line-height: 1.5;
+}
+
+/* ===== Design File Layout ===== */
+.design-file { max-width: 1440px; margin: 0 auto; padding: var(--space-xl); }
+.design-header {
+  background: var(--bg-white); border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-2xl); margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+}
+.design-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-xs); }
+.design-header .subtitle { color: var(--text-secondary); font-size: var(--text-lg); }
+.design-header .meta { margin-top: var(--space-md); display: flex; gap: var(--space-lg); font-size: var(--text-sm); color: var(--text-tertiary); }
+.design-header .meta span { display: flex; align-items: center; gap: var(--space-xs); }
+.version-badge {
+  display: inline-block; background: var(--brand); color: white;
+  padding: 2px 10px; border-radius: 100px; font-size: var(--text-xs); font-weight: 600;
+  margin-left: var(--space-sm); vertical-align: middle;
+}
+
+/* Quick Nav */
+.quick-nav {
+  background: var(--bg-white); border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-2xl); margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+}
+.quick-nav h3 { font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--space-md); }
+.quick-nav .nav-grid { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.quick-nav a {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; background: var(--bg-page); border-radius: 100px;
+  font-size: var(--text-sm); color: var(--text-secondary); text-decoration: none;
+  transition: all 0.2s;
+}
+.quick-nav a:hover { background: var(--brand-light); color: var(--brand); }
+
+/* Screen */
+.screen-section {
+  background: var(--bg-white); border-radius: var(--radius-lg);
+  margin-bottom: var(--space-xl); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.screen-header {
+  padding: var(--space-lg) var(--space-2xl);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.screen-header h2 { font-size: var(--text-xl); font-weight: 600; }
+.screen-header .screen-id { font-size: var(--text-sm); color: var(--text-tertiary); font-weight: 500; }
+.screen-body { padding: var(--space-2xl); }
+
+/* ===== Component: Login Page ===== */
+.login-bg {
+  min-height: 500px; background: linear-gradient(135deg, #0B1120 0%, #1a2744 50%, #162040 100%);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.login-card {
+  width: 400px; background: var(--bg-white); border-radius: var(--radius-xl);
+  padding: var(--space-2xl); box-shadow: var(--shadow-xl);
+}
+.login-card .logo-area { text-align: center; margin-bottom: var(--space-xl); }
+.login-card .logo-icon {
+  width: 48px; height: 48px; background: var(--brand); border-radius: var(--radius-md);
+  display: inline-flex; align-items: center; justify-content: center; color: white;
+  font-size: 24px; font-weight: 700; margin-bottom: var(--space-sm);
+}
+.login-card h3 { font-size: var(--text-xl); font-weight: 600; margin-bottom: var(--space-xs); }
+.login-card .desc { font-size: var(--text-sm); color: var(--text-tertiary); }
+
+.form-group { margin-bottom: var(--space-lg); }
+.form-group label { display: block; font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-xs); color: var(--text-secondary); }
+.form-input {
+  width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: var(--text-base); color: var(--text-primary);
+  background: var(--bg-white); transition: border-color 0.2s; outline: none;
+}
+.form-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(45,108,246,0.1); }
+.form-input::placeholder { color: var(--text-placeholder); }
+.form-input.error { border-color: var(--danger); }
+
+.remember-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); }
+.remember-row label { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--text-sm); color: var(--text-secondary); cursor: pointer; }
+.remember-hint { color: var(--brand); font-size: var(--text-xs); }
+.forgot-link { font-size: var(--text-sm); color: var(--brand); text-decoration: none; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm);
+  height: 40px; padding: 0 20px; border-radius: var(--radius-sm); font-size: var(--text-base);
+  font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; outline: none;
+}
+.btn-primary { background: var(--brand); color: white; width: 100%; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-secondary { background: var(--bg-white); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg-hover); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #DC2626; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: var(--text-sm); }
+.btn-ghost { background: transparent; color: var(--text-secondary); border: none; }
+.btn-ghost:hover { background: var(--bg-hover); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.login-error {
+  background: var(--danger-light); color: var(--danger); padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-lg);
+  display: flex; align-items: center; gap: var(--space-sm);
+}
+
+/* ===== Component: Admin Shell ===== */
+.admin-shell { display: flex; min-height: 600px; background: var(--bg-page); border-radius: var(--radius-lg); overflow: hidden; }
+.admin-sidebar {
+  width: var(--sidebar-w); background: var(--bg-sidebar); color: var(--text-white);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+.admin-sidebar .sb-logo {
+  padding: var(--space-lg); font-size: var(--text-lg); font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: var(--space-sm);
+}
+.admin-sidebar .sb-logo .dot { width: 8px; height: 8px; background: var(--brand); border-radius: 50%; }
+.sb-nav { padding: var(--space-md); flex: 1; }
+.sb-nav-item {
+  display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px;
+  border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; transition: all 0.15s;
+  color: rgba(255,255,255,0.6); margin-bottom: 2px;
+}
+.sb-nav-item:hover { background: var(--bg-sidebar-hover); color: var(--text-white); }
+.sb-nav-item.active { background: var(--bg-sidebar-active); color: var(--text-white); }
+.sb-nav-item .nav-icon { width: 18px; text-align: center; font-size: 16px; }
+.sb-user-area {
+  padding: var(--space-md); border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sb-user-area .user-info { font-size: var(--text-sm); color: rgba(255,255,255,0.7); margin-bottom: var(--space-xs); }
+.sb-user-area .user-expiry { font-size: var(--text-xs); color: rgba(255,255,255,0.4); margin-bottom: var(--space-sm); }
+.sb-user-area .user-actions { display: flex; gap: var(--space-sm); }
+.sb-user-area .user-actions a { font-size: var(--text-xs); color: rgba(255,255,255,0.5); text-decoration: none; cursor: pointer; }
+.sb-user-area .user-actions a:hover { color: var(--text-white); }
+
+.admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.admin-topbar {
+  height: var(--topbar-h); background: var(--bg-white); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-lg);
+  flex-shrink: 0;
+}
+.admin-topbar .page-title { font-size: var(--text-lg); font-weight: 600; }
+.admin-topbar .topbar-actions { display: flex; align-items: center; gap: var(--space-md); }
+
+.admin-body { flex: 1; padding: var(--space-lg); overflow-y: auto; }
+
+/* Tab bar */
+.tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: var(--space-lg); }
+.tab-item {
+  padding: var(--space-sm) var(--space-lg); font-size: var(--text-base); font-weight: 500;
+  color: var(--text-tertiary); cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s;
+}
+.tab-item:hover { color: var(--text-secondary); }
+.tab-item.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+/* ===== Component: Data Table ===== */
+.data-table-wrap { background: var(--bg-white); border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 12px var(--space-md); text-align: left;
+  background: var(--bg-hover); border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 12px var(--space-md); font-size: var(--text-sm); border-bottom: 1px solid var(--border-light); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg-hover); }
+
+/* ===== Component: Badges ===== */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
+  border-radius: 100px; font-size: var(--text-xs); font-weight: 500;
+}
+.badge-admin { background: var(--info-light); color: var(--info); }
+.badge-operator { background: var(--bg-page); color: var(--text-secondary); }
+.badge-active { background: var(--success-light); color: var(--success); }
+.badge-disabled { background: var(--danger-light); color: var(--danger); }
+.badge-pending { background: var(--warning-light); color: var(--warning); }
+
+/* ===== Component: Pagination ===== */
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md) 0; }
+.pagination .page-info { font-size: var(--text-sm); color: var(--text-tertiary); }
+.pagination .page-btns { display: flex; gap: var(--space-xs); }
+.page-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-sm);
+  cursor: pointer; background: var(--bg-white); color: var(--text-secondary); transition: all 0.15s;
+}
+.page-btn:hover { border-color: var(--brand); color: var(--brand); }
+.page-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ===== Component: Filter Bar ===== */
+.filter-bar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); flex-wrap: wrap; }
+.filter-bar .search-input {
+  width: 260px; height: 36px; padding: 0 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: var(--text-sm); outline: none;
+}
+.filter-bar .search-input:focus { border-color: var(--border-focus); }
+.filter-select {
+  height: 36px; padding: 0 32px 0 12px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: var(--text-sm); background: var(--bg-white);
+  appearance: none; cursor: pointer; outline: none;
+}
+
+/* ===== Component: Modal ===== */
+.modal-overlay {
+  background: rgba(0,0,0,0.5); position: relative; border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center; min-height: 400px;
+}
+.modal-box {
+  background: var(--bg-white); border-radius: var(--radius-lg); padding: var(--space-xl);
+  width: 440px; box-shadow: var(--shadow-xl);
+}
+.modal-box h3 { font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-lg); }
+.modal-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-xl); }
+.modal-wide { width: 520px; }
+
+/* ===== Component: Password Display ===== */
+.password-display {
+  background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: var(--space-md); display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-sm);
+}
+.password-display .pass-text { font-family: "SF Mono", "Fira Code", monospace; font-size: 18px; letter-spacing: 2px; color: var(--text-primary); }
+.password-display .pass-actions { display: flex; gap: var(--space-sm); }
+.password-display .pass-actions .icon-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-white);
+  cursor: pointer; font-size: 14px; transition: all 0.15s;
+}
+.password-display .pass-actions .icon-btn:hover { border-color: var(--brand); }
+
+/* ===== Component: Toast ===== */
+.toast {
+  display: inline-flex; align-items: center; gap: var(--space-sm); padding: 10px 20px;
+  border-radius: var(--radius-sm); font-size: var(--text-sm); box-shadow: var(--shadow-lg);
+}
+.toast-success { background: var(--success); color: white; }
+.toast-error { background: var(--danger); color: white; }
+
+/* ===== Component: Skeleton ===== */
+.skeleton { background: linear-gradient(90deg, var(--border-light) 25%, var(--bg-page) 50%, var(--border-light) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm); }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-row { display: flex; gap: var(--space-md); padding: 12px var(--space-md); }
+.skeleton-cell { height: 16px; }
+.skeleton-cell.w40 { width: 40px; }
+.skeleton-cell.w100 { width: 100px; }
+.skeleton-cell.w160 { width: 160px; }
+.skeleton-cell.w200 { width: 200px; }
+
+/* ===== Component: Empty State ===== */
+.empty-state { text-align: center; padding: var(--space-2xl) var(--space-xl); }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: var(--space-md); color: var(--text-placeholder); }
+.empty-state h4 { font-size: var(--text-lg); color: var(--text-secondary); margin-bottom: var(--space-xs); font-weight: 500; }
+.empty-state p { font-size: var(--text-sm); color: var(--text-tertiary); margin-bottom: var(--space-lg); }
+
+/* ===== Component: Transition Page ===== */
+.transition-page {
+  min-height: 400px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-page); border-radius: var(--radius-lg);
+}
+.transition-card { text-align: center; max-width: 360px; }
+.transition-card .icon { font-size: 56px; margin-bottom: var(--space-lg); }
+.transition-card h3 { font-size: var(--text-xl); font-weight: 600; margin-bottom: var(--space-sm); }
+.transition-card p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-lg); line-height: 1.6; }
+
+/* ===== Component: Status Bar ===== */
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.online { background: var(--success); }
+.status-dot.offline { background: var(--text-placeholder); }
+
+/* ===== Spinner ===== */
+.spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--brand);
+  border-radius: 50%; display: inline-block; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-lg { width: 32px; height: 32px; border-width: 3px; }
+
+/* ===== Copied indicator ===== */
+.copied { color: var(--success); display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-sm); font-weight: 500; }
+
+/* ===== Inline Confirm ===== */
+.inline-confirm {
+  background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md); font-size: var(--text-sm); color: #92400E;
+}
+
+/* ===== Countdown ===== */
+.countdown { color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-md); }
+
+/* ===== Error Page ===== */
+.error-page {
+  min-height: 400px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; background: var(--bg-white); border-radius: var(--radius-lg);
+}
+.error-page .code { font-size: 72px; font-weight: 800; color: var(--text-placeholder); }
+.error-page h3 { font-size: var(--text-xl); margin-bottom: var(--space-sm); }
+.error-page p { color: var(--text-secondary); margin-bottom: var(--space-lg); }
+
+/* ===== Step indicator ===== */
+.steps { display: flex; gap: 0; margin-bottom: var(--space-lg); }
+.step { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--text-sm); color: var(--text-tertiary); }
+.step::after { content: '→'; margin: 0 var(--space-sm); color: var(--text-placeholder); }
+.step:last-child::after { display: none; }
+.step.active { color: var(--brand); font-weight: 500; }
+.step.done { color: var(--success); }
+
+/* ===== Visual separator ===== */
+.divider { border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0; }
+
+/* ===== Misc ===== */
+.note-block {
+  background: var(--info-light); border-radius: var(--radius-sm);
+  padding: var(--space-md); font-size: var(--text-sm); color: #3730A3;
+  display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-lg);
+}
+.warning-block {
+  background: var(--danger-light); border-radius: var(--radius-sm);
+  padding: var(--space-md); font-size: var(--text-sm); color: #991B1B;
+  display: flex; align-items: flex-start; gap: var(--space-sm);
+}
+
+.row { display: flex; gap: var(--space-lg); }
+.col-2 { flex: 1; }
+.text-muted { color: var(--text-tertiary); font-size: var(--text-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mb-md { margin-bottom: var(--space-md); }
+
+/* ===== Inline Toast (positioned at container top) ===== */
+.toast-inline {
+  display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-md);
+}
+.toast-inline.success { background: var(--success-light); color: #065F46; }
+.toast-inline.error { background: var(--danger-light); color: #991B1B; }
+
+/* ===== Action buttons in table ===== */
+.table-actions { display: flex; gap: var(--space-sm); }
+.table-actions .action-link { font-size: var(--text-sm); color: var(--brand); cursor: pointer; text-decoration: none; }
+.table-actions .action-link:hover { text-decoration: underline; }
+.table-actions .action-link.danger { color: var(--danger); }
+
+/* ===== Audit Log ===== */
+.audit-log .log-row { padding: var(--space-md); border-bottom: 1px solid var(--border-light); }
+.audit-log .log-row:last-child { border-bottom: none; }
+.audit-log .log-meta { font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 2px; }
+.audit-log .log-desc { font-size: var(--text-sm); }
+
+/* ===== Sidebar user area ===== */
+.sidebar-user { padding: var(--space-md); border-top: 1px solid rgba(255,255,255,0.08); }
+
+/* Remember row styles for login */
+.remember-row .hint-text { color: var(--brand); font-size: var(--text-xs); margin-left: var(--space-sm); }
+
+/* ===== 403 / error admin ===== */
+.admin-error-page { min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-white); border-radius: var(--radius-lg); }
+</style>
+</head>
+<body>
+<div class="design-file">
+
+<!-- Header -->
+<div class="design-header">
+  <h1>AI虚拟试衣SaaS <span class="version-badge">v2.0</span></h1>
+  <div class="subtitle">用户系统 · UI/UE 完整设计稿（14 屏）</div>
+  <div class="meta">
+    <span>📅 2026-05-18</span>
+    <span>✏️ 采薇（UI设计师）</span>
+    <span>📐 基于 PRD v2.0 Part 1 确定版</span>
+  </div>
+</div>
+
+<!-- Quick Nav -->
+<div class="quick-nav">
+  <h3>快速导航</h3>
+  <div class="nav-grid">
+    <a href="#v2-01">V2-01 登录页</a>
+    <a href="#v2-02">V2-02 登录错误/锁定</a>
+    <a href="#v2-03">V2-03 管理后台 · 用户列表</a>
+    <a href="#v2-04">V2-04 管理后台 · 操作日志</a>
+    <a href="#v2-05">V2-05 创建用户弹窗</a>
+    <a href="#v2-06">V2-06 创建成功 · 密码展示</a>
+    <a href="#v2-07">V2-07 编辑/禁用确认弹窗</a>
+    <a href="#v2-08">V2-08 重置密码弹窗</a>
+    <a href="#v2-09">V2-09 修改密码过渡页</a>
+    <a href="#v2-10">V2-10 空态/Loading/错误态</a>
+    <a href="#v2-11">V2-11 后台免密过渡页</a>
+    <a href="#v2-12">V2-12 403/404/500 错误页</a>
+    <a href="#v2-13">V2-13 主应用登录页</a>
+    <a href="#v2-14">V2-14 主应用工作台（含用户信息）</a>
+  </div>
+</div>
+
+<!-- ===== V2-01: 登录页 ===== -->
+<div class="screen-section" id="v2-01">
+  <div class="screen-header">
+    <h2>V2-01 · 登录页（含记住我）</h2>
+    <span class="screen-id">TryOn Studio · Admin Login</span>
+  </div>
+  <div class="screen-body">
+    <div class="login-bg">
+      <div class="login-card">
+        <div class="logo-area">
+          <div class="logo-icon">T</div>
+          <h3>TryOn Studio</h3>
+          <div class="desc">AI虚拟试衣 · 管理后台</div>
+        </div>
+
+        <div class="form-group">
+          <label>邮箱</label>
+          <input class="form-input" type="email" placeholder="admin@tryonstudio.local" value="admin@tryonstudio.local">
+        </div>
+
+        <div class="form-group">
+          <label>密码</label>
+          <input class="form-input" type="password" placeholder="输入密码" value="123456">
+        </div>
+
+        <div class="remember-row">
+          <label>
+            <input type="checkbox" checked>
+            <span>记住我</span>
+            <span class="remember-hint">30 天内无需重新登录</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary">登录</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-02: 登录错误 & 锁定 ===== -->
+<div class="screen-section" id="v2-02">
+  <div class="screen-header">
+    <h2>V2-02 · 登录错误 / 频率限制 / 锁定</h2>
+    <span class="screen-id">Error States</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">场景 A：密码错误</h4>
+        <div class="login-bg" style="min-height: 380px;">
+          <div class="login-card">
+            <div class="logo-area">
+              <div class="logo-icon">T</div>
+              <h3>TryOn Studio</h3>
+              <div class="desc">管理后台</div>
+            </div>
+            <div class="login-error">⚠️ 邮箱或密码错误，请重试（剩余 4 次尝试）</div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" value="admin@tryonstudio.local">
+            </div>
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input error" type="password" value="wrongpassword">
+            </div>
+            <div class="remember-row">
+              <label><input type="checkbox" checked><span>记住我</span></label>
+            </div>
+            <button class="btn btn-primary">登录</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">场景 B：账户锁定（5 次失败）</h4>
+        <div class="login-bg" style="min-height: 380px;">
+          <div class="login-card">
+            <div class="logo-area">
+              <div class="logo-icon">T</div>
+              <h3>TryOn Studio</h3>
+              <div class="desc">管理后台</div>
+            </div>
+            <div class="login-error">🔒 账户已被临时锁定，请 15 分钟后再试，或联系管理员</div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" value="admin@tryonstudio.local">
+            </div>
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input" type="password" placeholder="输入密码" disabled>
+            </div>
+            <button class="btn btn-primary" disabled>登录</button>
+            <p style="text-align:center; margin-top: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary);">锁定剩余时间：14 分 32 秒</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-03: 管理后台 · 用户列表 ===== -->
+<div class="screen-section" id="v2-03">
+  <div class="screen-header">
+    <h2>V2-03 · 管理后台 — 用户管理（Tab）</h2>
+    <span class="screen-id">Admin Backend</span>
+  </div>
+  <div class="screen-body" style="padding: 0;">
+    <div class="admin-shell" style="border-radius: 0;">
+      <div class="admin-sidebar">
+        <div class="sb-logo"><span class="dot"></span> TryOn Studio</div>
+        <div class="sb-nav">
+          <div class="sb-nav-item"><span class="nav-icon">🏠</span> 概览</div>
+          <div class="sb-nav-item active"><span class="nav-icon">👥</span> 用户管理</div>
+          <div class="sb-nav-item"><span class="nav-icon">⚙️</span> 系统设置</div>
+        </div>
+        <div class="sidebar-user">
+          <div class="user-info">👤 admin@tryonstudio.local</div>
+          <div class="user-expiry">登录有效期至 6月17日</div>
+          <div class="user-actions">
+            <a>修改密码</a>
+            <a>登出</a>
+          </div>
+        </div>
+      </div>
+      <div class="admin-main">
+        <div class="admin-topbar">
+          <span class="page-title">用户管理</span>
+          <div class="topbar-actions">
+            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">共 3 个用户</span>
+            <button class="btn btn-primary btn-sm">+ 创建用户</button>
+          </div>
+        </div>
+        <div class="admin-body">
+          <div class="tab-bar">
+            <div class="tab-item active">用户管理</div>
+            <div class="tab-item">操作日志</div>
+          </div>
+
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="搜索邮箱或备注...">
+            <select class="filter-select">
+              <option>全部角色</option>
+              <option>admin</option>
+              <option>operator</option>
+            </select>
+            <select class="filter-select">
+              <option>全部状态</option>
+              <option>正常</option>
+              <option>已禁用</option>
+            </select>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>用户</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                  <th>最后登录</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div style="font-weight: 500;">admin@tryonstudio.local</div>
+                    <div style="font-size: var(--text-xs); color: var(--text-tertiary);">创建者：系统初始化</div>
+                  </td>
+                  <td><span class="badge badge-admin">管理员</span></td>
+                  <td><span class="badge badge-active">正常</span></td>
+                  <td>2026-05-10 09:00</td>
+                  <td>2026-05-18 14:32</td>
+                  <td>
+                    <div class="table-actions">
+                      <a class="action-link">编辑</a>
+                      <a class="action-link">重置密码</a>
+                      <a class="action-link">—</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="font-weight: 500;">operator1@tryonstudio.local</div>
+                    <div style="font-size: var(--text-xs); color: var(--text-tertiary);">创建者：admin</div>
+                  </td>
+                  <td><span class="badge badge-operator">操作员</span></td>
+                  <td><span class="badge badge-active">正常</span></td>
+                  <td>2026-05-12 10:30</td>
+                  <td>2026-05-18 09:15</td>
+                  <td>
+                    <div class="table-actions">
+                      <a class="action-link">编辑</a>
+                      <a class="action-link">重置密码</a>
+                      <a class="action-link danger">禁用</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="font-weight: 500;">disabled_user@tryonstudio.local</div>
+                    <div style="font-size: var(--text-xs); color: var(--text-tertiary);">创建者：admin</div>
+                  </td>
+                  <td><span class="badge badge-operator">操作员</span></td>
+                  <td><span class="badge badge-disabled">已禁用</span></td>
+                  <td>2026-05-11 16:00</td>
+                  <td>2026-05-13 11:20</td>
+                  <td>
+                    <div class="table-actions">
+                      <a class="action-link">编辑</a>
+                      <a class="action-link">重置密码</a>
+                      <a class="action-link" style="color: var(--success);">启用</a>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="page-info">显示 1-3，共 3 条</div>
+            <div class="page-btns">
+              <button class="page-btn" disabled>←</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn" disabled>→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-04: 管理后台 · 操作日志 ===== -->
+<div class="screen-section" id="v2-04">
+  <div class="screen-header">
+    <h2>V2-04 · 管理后台 — 操作日志（Tab）</h2>
+    <span class="screen-id">Audit Log</span>
+  </div>
+  <div class="screen-body" style="padding: 0;">
+    <div class="admin-shell" style="border-radius: 0;">
+      <div class="admin-sidebar">
+        <div class="sb-logo"><span class="dot"></span> TryOn Studio</div>
+        <div class="sb-nav">
+          <div class="sb-nav-item"><span class="nav-icon">🏠</span> 概览</div>
+          <div class="sb-nav-item active"><span class="nav-icon">👥</span> 用户管理</div>
+          <div class="sb-nav-item"><span class="nav-icon">⚙️</span> 系统设置</div>
+        </div>
+        <div class="sidebar-user">
+          <div class="user-info">👤 admin@tryonstudio.local</div>
+          <div class="user-expiry">登录有效期至 6月17日</div>
+          <div class="user-actions"><a>修改密码</a><a>登出</a></div>
+        </div>
+      </div>
+      <div class="admin-main">
+        <div class="admin-topbar">
+          <span class="page-title">用户管理</span>
+          <div class="topbar-actions">
+            <span style="font-size: var(--text-sm); color: var(--text-tertiary);">共 18 条操作记录</span>
+          </div>
+        </div>
+        <div class="admin-body">
+          <div class="tab-bar">
+            <div class="tab-item">用户管理</div>
+            <div class="tab-item active">操作日志</div>
+          </div>
+
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="搜索操作人、目标用户或操作类型...">
+            <select class="filter-select">
+              <option>全部操作类型</option>
+              <option>用户创建</option>
+              <option>用户编辑</option>
+              <option>用户禁用</option>
+              <option>用户启用</option>
+              <option>密码重置</option>
+              <option>修改密码</option>
+            </select>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>操作人</th>
+                  <th>操作类型</th>
+                  <th>目标</th>
+                  <th>详情</th>
+                  <th>IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="white-space: nowrap;">2026-05-18 14:32</td>
+                  <td>admin@tryonstudio.local</td>
+                  <td><span class="badge badge-pending">用户禁用</span></td>
+                  <td>old_op@tryonstudio.local</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-secondary);">禁用操作员账号</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-tertiary);">192.168.1.100</td>
+                </tr>
+                <tr>
+                  <td style="white-space: nowrap;">2026-05-17 11:20</td>
+                  <td>admin@tryonstudio.local</td>
+                  <td><span class="badge badge-admin">用户创建</span></td>
+                  <td>operator1@tryonstudio.local</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-secondary);">创建操作员，角色：operator</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-tertiary);">192.168.1.100</td>
+                </tr>
+                <tr>
+                  <td style="white-space: nowrap;">2026-05-16 09:15</td>
+                  <td>admin@tryonstudio.local</td>
+                  <td><span class="badge badge-pending">密码重置</span></td>
+                  <td>operator1@tryonstudio.local</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-secondary);">重置密码，所有令牌已吊销</td>
+                  <td style="font-size: var(--text-xs); color: var(--text-tertiary);">192.168.1.100</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="page-info">显示 1-3，共 18 条</div>
+            <div class="page-btns">
+              <button class="page-btn" disabled>←</button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <button class="page-btn">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-05: 创建用户弹窗 ===== -->
+<div class="screen-section" id="v2-05">
+  <div class="screen-header">
+    <h2>V2-05 · 创建用户弹窗</h2>
+    <span class="screen-id">Create User Modal</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">步骤 1：填写信息</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>创建用户</h3>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" placeholder="new_user@tryonstudio.local">
+            </div>
+            <div class="form-group">
+              <label>角色</label>
+              <select class="form-input" style="appearance: none;">
+                <option>operator（操作员）</option>
+                <option>admin（管理员）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>备注（选填）</label>
+              <input class="form-input" type="text" placeholder="如：运营部小张">
+            </div>
+            <div class="note-block">💡 系统将自动生成一个随机安全密码，创建成功后仅展示一次。</div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary" style="width: auto;">确认创建</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">步骤 2：表单校验错误</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>创建用户</h3>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input error" type="email" value="admin@tryonstudio.local" placeholder="new_user@tryonstudio.local">
+              <div style="font-size: var(--text-xs); color: var(--danger); margin-top: 4px;">⚠️ 该邮箱已被注册</div>
+            </div>
+            <div class="form-group">
+              <label>角色</label>
+              <select class="form-input" style="appearance: none;">
+                <option>operator（操作员）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>备注（选填）</label>
+              <input class="form-input" type="text" placeholder="如：运营部小张">
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary" style="width: auto;">确认创建</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-06: 创建成功 · 密码展示 ===== -->
+<div class="screen-section" id="v2-06">
+  <div class="screen-header">
+    <h2>V2-06 · 创建成功 — 密码安全展示</h2>
+    <span class="screen-id">Password Display</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">初始态：密码脱敏显示</h4>
+        <div class="modal-overlay">
+          <div class="modal-box modal-wide">
+            <div style="text-align: center; font-size: 48px; margin-bottom: var(--space-md);">✅</div>
+            <h3 style="text-align: center;">用户创建成功</h3>
+            <p style="text-align: center; color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-lg);">
+              新用户：<strong>new_user@tryonstudio.local</strong>
+            </p>
+
+            <div style="font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-xs); color: var(--text-secondary);">初始密码</div>
+            <div class="password-display">
+              <span class="pass-text">a3f8••••</span>
+              <div class="pass-actions">
+                <button class="icon-btn" title="显示完整密码">👁</button>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm);">
+              <button class="btn btn-secondary" style="flex: 1;">📋 一键复制</button>
+            </div>
+
+            <div class="warning-block" style="margin-top: var(--space-lg);">⚠️ 此密码仅展示一次，关闭弹窗后将无法找回。请妥善保存并交给用户。</div>
+
+            <div class="modal-actions">
+              <button class="btn btn-primary" style="width: 100%;">确认已保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">交互态：密码完全展示 + 已复制</h4>
+        <div class="modal-overlay">
+          <div class="modal-box modal-wide">
+            <div style="text-align: center; font-size: 48px; margin-bottom: var(--space-md);">✅</div>
+            <h3 style="text-align: center;">用户创建成功</h3>
+            <p style="text-align: center; color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-lg);">
+              新用户：<strong>new_user@tryonstudio.local</strong>
+            </p>
+
+            <div style="font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-xs); color: var(--text-secondary);">初始密码</div>
+            <div class="password-display">
+              <span class="pass-text">a3f8Kp2xQm9</span>
+              <div class="pass-actions">
+                <button class="icon-btn" style="border-color: var(--brand);" title="隐藏密码">👁</button>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm);">
+              <button class="btn btn-secondary" style="flex: 1; border-color: var(--success); background: var(--success-light);">
+                <span class="copied">✓ 已复制</span>
+              </button>
+            </div>
+
+            <div class="warning-block" style="margin-top: var(--space-lg);">⚠️ 此密码仅展示一次，关闭弹窗后将无法找回。请妥善保存并交给用户。</div>
+
+            <div class="modal-actions">
+              <button class="btn btn-primary" style="width: 100%;">确认已保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-07: 编辑/禁用确认弹窗 ===== -->
+<div class="screen-section" id="v2-07">
+  <div class="screen-header">
+    <h2>V2-07 · 编辑用户 & 禁用/启用确认弹窗</h2>
+    <span class="screen-id">Edit & Disable Modals</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">编辑用户</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>编辑用户</h3>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" value="operator1@tryonstudio.local" disabled style="background: var(--bg-page); color: var(--text-tertiary);">
+              <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 4px;">邮箱不可修改</div>
+            </div>
+            <div class="form-group">
+              <label>角色</label>
+              <select class="form-input" style="appearance: none;">
+                <option selected>operator（操作员）</option>
+                <option>admin（管理员）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>备注</label>
+              <input class="form-input" type="text" value="运营部小张">
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary" style="width: auto;">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">禁用用户确认</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>禁用用户</h3>
+            <div style="text-align: center; font-size: 48px; margin-bottom: var(--space-md);">⚠️</div>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-lg); line-height: 1.6;">
+              确定要禁用 <strong>operator1@tryonstudio.local</strong> 吗？<br>
+              禁用后该用户将<strong style="color: var(--danger);">无法登录</strong>，其所有活跃会话将被立即清除。
+            </p>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-danger" style="width: auto;">确认禁用</button>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin: var(--space-xl) 0 var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">最后一个 admin 保护提示</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>无法禁用</h3>
+            <div style="text-align: center; font-size: 48px; margin-bottom: var(--space-md);">🔒</div>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-lg); line-height: 1.6;">
+              <strong>admin@tryonstudio.local</strong> 是系统中<strong style="color: var(--danger);">最后一个管理员</strong>。<br>
+              为保障系统安全，不可禁用或降级该账号。
+            </p>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" style="width: 100%;">我知道了</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-08: 重置密码弹窗 ===== -->
+<div class="screen-section" id="v2-08">
+  <div class="screen-header">
+    <h2>V2-08 · 重置密码弹窗</h2>
+    <span class="screen-id">Reset Password Modal</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">步骤 1：确认重置</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>重置密码</h3>
+            <div style="text-align: center; font-size: 40px; margin-bottom: var(--space-md);">🔑</div>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-lg); line-height: 1.6;">
+              将为 <strong>operator1@tryonstudio.local</strong> 生成新的随机密码。<br>
+              该用户在所有设备的<strong style="color: var(--danger);">活跃会话将被立即清除</strong>。
+            </p>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary" style="width: auto; background: var(--warning); border-color: var(--warning); color: white;">确认重置</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">步骤 2：展示新密码（同创建流程）</h4>
+        <div class="modal-overlay">
+          <div class="modal-box modal-wide">
+            <div style="text-align: center; font-size: 48px; margin-bottom: var(--space-md);">✅</div>
+            <h3 style="text-align: center;">密码已重置</h3>
+            <p style="text-align: center; color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-lg);">
+              用户 <strong>operator1@tryonstudio.local</strong> 的新密码
+            </p>
+
+            <div style="font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-xs); color: var(--text-secondary);">新密码</div>
+            <div class="password-display">
+              <span class="pass-text">b7xL••••</span>
+              <div class="pass-actions">
+                <button class="icon-btn">👁</button>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm);">
+              <button class="btn btn-secondary" style="flex: 1;">📋 一键复制</button>
+            </div>
+
+            <div class="warning-block" style="margin-top: var(--space-lg);">⚠️ 此密码仅展示一次，关闭弹窗后将无法找回。所有旧密码已失效。</div>
+
+            <div class="modal-actions">
+              <button class="btn btn-primary" style="width: 100%;">确认已保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-09: 修改密码过渡页 ===== -->
+<div class="screen-section" id="v2-09">
+  <div class="screen-header">
+    <h2>V2-09 · 修改密码流程 & 过渡页</h2>
+    <span class="screen-id">Change Password + Transition</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">修改密码弹窗（sidebar 内触发）</h4>
+        <div class="modal-overlay">
+          <div class="modal-box">
+            <h3>修改密码</h3>
+            <div class="form-group">
+              <label>当前密码</label>
+              <input class="form-input" type="password" placeholder="输入当前密码">
+            </div>
+            <div class="form-group">
+              <label>新密码</label>
+              <input class="form-input" type="password" placeholder="至少 8 位，含字母和数字">
+            </div>
+            <div class="form-group">
+              <label>确认新密码</label>
+              <input class="form-input" type="password" placeholder="再次输入新密码">
+            </div>
+            <div class="note-block" style="margin-bottom: 0;">修改密码后，所有设备的登录状态将被清除，需使用新密码重新登录。</div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary">取消</button>
+              <button class="btn btn-primary" style="width: auto;">确认修改</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">修改成功 → 过渡提示页</h4>
+        <div class="transition-page">
+          <div class="transition-card">
+            <div class="icon">✓</div>
+            <h3>密码已修改</h3>
+            <p>为保障账号安全，所有设备已退出登录。<br>请使用新密码重新登录。</p>
+            <p class="countdown">3 秒后自动跳转登录页</p>
+            <button class="btn btn-primary" style="width: 100%;">立即登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-10: 空态/Loading/错误态 ===== -->
+<div class="screen-section" id="v2-10">
+  <div class="screen-header">
+    <h2>V2-10 · 空态 / Loading / 错误态</h2>
+    <span class="screen-id">Edge States</span>
+  </div>
+  <div class="screen-body">
+    <div class="row" style="margin-bottom: var(--space-xl);">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">用户列表 · 空态</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white);">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h4>暂无用户</h4>
+            <p>这是新部署的系统，还没有创建任何用户。<br>点击下方按钮创建第一个管理员用户。</p>
+            <button class="btn btn-primary">+ 创建第一个用户</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">搜索无结果</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white);">
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h4>未找到匹配的用户</h4>
+            <p>没有与「xyz@tryonstudio.local」匹配的结果。<br>请检查拼写或调整筛选条件。</p>
+            <button class="btn btn-secondary">清除筛选</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom: var(--space-xl);">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">用户列表 · Loading 骨架屏</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white);">
+          <div style="padding: var(--space-md);">
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-cell w40"></div>
+              <div class="skeleton skeleton-cell w200"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w160"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+            </div>
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-cell w40"></div>
+              <div class="skeleton skeleton-cell w200"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w160"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+            </div>
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-cell w40"></div>
+              <div class="skeleton skeleton-cell w200"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+              <div class="skeleton skeleton-cell w160"></div>
+              <div class="skeleton skeleton-cell w100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">按钮提交 Loading + 防重复</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white); padding: var(--space-xl);">
+          <div style="display: flex; flex-direction: column; gap: var(--space-lg); align-items: center;">
+            <div>
+              <button class="btn btn-primary" disabled>
+                <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: white;"></span>
+                创建中...
+              </button>
+            </div>
+            <div>
+              <button class="btn btn-danger" disabled>
+                <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: white;"></span>
+                禁'用中...
+              </button>
+            </div>
+            <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm);">
+              <div class="toast toast-success">✓ 用户创建成功</div>
+              <div class="toast toast-error">✕ 网络请求失败，请重试</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">操作日志 · 空态</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white);">
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h4>暂无操作日志</h4>
+            <p>系统刚部署，还没有任何操作记录。<br>用户创建、编辑、禁用等操作将自动记录。</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">全局网络错误 · 重试态</h4>
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white);">
+          <div class="empty-state">
+            <div class="empty-icon">🔌</div>
+            <h4>加载失败</h4>
+            <p>网络连接异常，无法加载用户列表。<br>请检查网络后重试。</p>
+            <button class="btn btn-primary">
+              <span style="display: inline-flex; align-items: center; gap: 6px;">🔄 重新加载</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-11: 后台免密过渡页 ===== -->
+<div class="screen-section" id="v2-11">
+  <div class="screen-header">
+    <h2>V2-11 · 后台免密自动登录过渡页</h2>
+    <span class="screen-id">SSO Transition</span>
+  </div>
+  <div class="screen-body">
+    <div class="transition-page">
+      <div class="transition-card">
+        <div style="font-size: 48px; margin-bottom: var(--space-lg);">🔐</div>
+        <h3>TryOn Studio<br>管理后台</h3>
+        <p style="margin-top: var(--space-lg);">检测到已登录的管理员账号：</p>
+        <p style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg);">admin@tryonstudio.local</p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: var(--space-sm); margin-bottom: var(--space-xl); color: var(--text-tertiary);">
+          <span class="spinner spinner-lg"></span>
+          <span>正在进入管理后台...</span>
+        </div>
+        <button class="btn btn-secondary" style="color: var(--danger);">这不是我，退出登录</button>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary);">
+      2 秒后自动跳转（如无操作）
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-12: 403/404/500 ===== -->
+<div class="screen-section" id="v2-12">
+  <div class="screen-header">
+    <h2>V2-12 · 错误页面：403 / 404 / 500</h2>
+    <span class="screen-id">Error Pages</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">403 — 非管理员访问后台</h4>
+        <div class="admin-error-page">
+          <div class="code" style="color: var(--warning);">403</div>
+          <h3>权限不足</h3>
+          <p>仅管理员可访问后台管理系统。<br>如需升级权限，请联系系统管理员。</p>
+          <button class="btn btn-secondary">返回主应用</button>
+        </div>
+      </div>
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">404 — 页面不存在</h4>
+        <div class="admin-error-page">
+          <div class="code">404</div>
+          <h3>页面不存在</h3>
+          <p>你访问的页面不存在或已被移除。<br>请检查 URL 是否正确。</p>
+          <button class="btn btn-secondary">返回首页</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: var(--space-xl);">
+      <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">500 — 服务器内部错误</h4>
+      <div class="admin-error-page">
+        <div class="code" style="color: var(--danger);">500</div>
+        <h3>服务异常</h3>
+        <p>系统暂时出现故障，正在紧急修复中。<br>请稍后再试，或联系技术支持。</p>
+        <button class="btn btn-secondary">重试</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== V2-13: 主应用登录页 ===== -->
+<div class="screen-section" id="v2-13">
+  <div class="screen-header">
+    <h2>V2-13 · 主应用登录页（TryOn Studio SaaS）</h2>
+    <span class="screen-id">Main App Login · localhost:3000</span>
+  </div>
+  <div class="screen-body">
+    <div class="row">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">默认态：首次访问 / 未登录</h4>
+        <div class="login-bg" style="min-height: 520px; background: linear-gradient(135deg, #0B1120 0%, #162245 40%, #1a3750 100%); position: relative; overflow: hidden;">
+          <!-- Decorative background elements -->
+          <div style="position: absolute; top: -60px; right: -40px; width: 280px; height: 280px; border-radius: 50%; background: rgba(45,108,246,0.08); pointer-events: none;"></div>
+          <div style="position: absolute; bottom: -80px; left: -60px; width: 320px; height: 320px; border-radius: 50%; background: rgba(99,102,241,0.06); pointer-events: none;"></div>
+          <div class="login-card" style="width: 420px; position: relative; z-index: 1;">
+            <div class="logo-area">
+              <div class="logo-icon" style="width: 52px; height: 52px; font-size: 26px; background: linear-gradient(135deg, #2D6CF6, #818CF8);">T</div>
+              <h3 style="margin-top: var(--space-sm);">TryOn Studio</h3>
+              <div class="desc" style="font-size: var(--text-sm);">AI虚拟人穿衣 · 智能试穿工作台</div>
+            </div>
+
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" placeholder="请输入邮箱地址">
+            </div>
+
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input" type="password" placeholder="请输入密码">
+            </div>
+
+            <div class="remember-row">
+              <label>
+                <input type="checkbox">
+                <span>记住我</span>
+                <span class="remember-hint">7 天内保持登录</span>
+              </label>
+            </div>
+
+            <button class="btn btn-primary" style="height: 44px; font-size: var(--text-lg);">登录工作台</button>
+
+            <p style="text-align: center; margin-top: var(--space-lg); font-size: var(--text-sm); color: var(--text-tertiary);">
+              没有账号？请联系管理员创建
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">交互态：勾选记住我 / 登录错误</h4>
+        <div class="login-bg" style="min-height: 520px; background: linear-gradient(135deg, #0B1120 0%, #162245 40%, #1a3750 100%); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -60px; right: -40px; width: 280px; height: 280px; border-radius: 50%; background: rgba(45,108,246,0.08); pointer-events: none;"></div>
+          <div style="position: absolute; bottom: -80px; left: -60px; width: 320px; height: 320px; border-radius: 50%; background: rgba(99,102,241,0.06); pointer-events: none;"></div>
+          <div class="login-card" style="width: 420px; position: relative; z-index: 1;">
+            <div class="logo-area">
+              <div class="logo-icon" style="width: 52px; height: 52px; font-size: 26px; background: linear-gradient(135deg, #2D6CF6, #818CF8);">T</div>
+              <h3 style="margin-top: var(--space-sm);">TryOn Studio</h3>
+              <div class="desc" style="font-size: var(--text-sm);">AI虚拟人穿衣 · 智能试穿工作台</div>
+            </div>
+
+            <div class="login-error">⚠️ 邮箱或密码错误，请重试（剩余 3 次尝试）</div>
+
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input error" type="email" value="operator1@tryonstudio.local">
+            </div>
+
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input error" type="password" value="wrongpassword">
+            </div>
+
+            <div class="remember-row">
+              <label>
+                <input type="checkbox" checked>
+                <span>记住我</span>
+                <span class="remember-hint" style="color: var(--success);">30 天内无需重新登录</span>
+              </label>
+            </div>
+
+            <button class="btn btn-primary" style="height: 44px; font-size: var(--text-lg);">登录工作台</button>
+
+            <p style="text-align: center; margin-top: var(--space-lg); font-size: var(--text-sm); color: var(--text-tertiary);">
+              没有账号？请联系管理员创建
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top: var(--space-xl);">
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">Operator 被禁用后尝试登录</h4>
+        <div class="login-bg" style="min-height: 420px; background: linear-gradient(135deg, #0B1120 0%, #162245 40%, #1a3750 100%);">
+          <div class="login-card">
+            <div class="logo-area">
+              <div class="logo-icon" style="width: 52px; height: 52px; font-size: 26px; background: linear-gradient(135deg, #2D6CF6, #818CF8);">T</div>
+              <h3>TryOn Studio</h3>
+              <div class="desc">AI虚拟人穿衣 · 智能试穿工作台</div>
+            </div>
+            <div class="login-error" style="background: var(--warning-light); color: #92400E;">🚫 此账号已被禁用，请联系管理员</div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" value="disabled_user@tryonstudio.local" disabled style="background: var(--bg-page);">
+            </div>
+            <div class="form-group">
+              <label>密码</label>
+              <input class="form-input" type="password" placeholder="输入密码" disabled>
+            </div>
+            <button class="btn btn-primary" disabled>登录工作台</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-2">
+        <h4 style="margin-bottom: var(--space-md); font-size: var(--text-sm); color: var(--text-tertiary); text-transform: uppercase;">Operator 尝试访问管理后台被拒</h4>
+        <div class="login-bg" style="min-height: 420px; background: linear-gradient(135deg, #0B1120 0%, #162245 40%, #1a3750 100%);">
+          <div class="login-card">
+            <div class="logo-area">
+              <div class="logo-icon" style="width: 52px; height: 52px; font-size: 26px; background: linear-gradient(135deg, #F59E0B, #EF4444);">!</div>
+              <h3>TryOn Studio</h3>
+              <div class="desc" style="color: var(--warning);">管理后台</div>
+            </div>
+            <div class="login-error" style="background: var(--warning-light); color: #92400E;">🔒 此账号非管理员，无法登录管理后台。<br>请使用主应用工作台 (localhost:3000)。</div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input class="form-input" type="email" value="operator1@tryonstudio.local" disabled style="background: var(--bg-page);">
+            </div>
+            <button class="btn btn-secondary" style="width: 100%;">前往主应用工作台</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== V2-14: 主应用工作台（含用户信息） ===== -->
+<div class="screen-section" id="v2-14">
+  <div class="screen-header">
+    <h2>V2-14 · 主应用工作台 — 侧边栏用户信息区</h2>
+    <span class="screen-id">Main App Sidebar · User Area</span>
+  </div>
+  <div class="screen-body" style="padding: 0;">
+    <!-- Main app shell replicating the actual app structure -->
+    <div style="display: grid; grid-template-columns: 240px 1fr; min-height: 650px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border);">
+      <!-- Sidebar -->
+      <aside style="background: var(--bg-white); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-lg); border-right: 1px solid var(--border);">
+        <!-- Brand -->
+        <div style="display: flex; align-items: center; gap: var(--space-md);">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--brand), #818CF8); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;">T</div>
+          <div>
+            <strong style="display: block; color: var(--text-primary); font-size: 15px; line-height: 1.3;">TryOn Studio</strong>
+            <span style="color: var(--text-tertiary); font-size: 12px;">AI虚拟人穿衣</span>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); background: var(--brand-light); color: var(--brand); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--brand); flex-shrink: 0;"></span> 智能试穿工作台
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text-tertiary); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;"></span> 任务进度
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text-tertiary); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;"></span> 历史任务
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text-tertiary); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;"></span> 结果管理
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text-tertiary); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;"></span> 模特库
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text-tertiary); font-size: 14px; cursor: pointer;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;"></span> 模型与版本管理
+          </div>
+        </nav>
+
+        <!-- Credit Card -->
+        <div style="background: var(--bg-page); border-radius: var(--radius-md); border: 1px solid var(--border); padding: var(--space-md); font-size: 13px; color: var(--text-secondary);">
+          <span>可用额度</span>
+          <strong style="display: block; color: var(--brand); font-size: 24px; margin: 4px 0;">1,200</strong>
+          <small style="font-size: 11px; color: var(--text-tertiary);">提交时预扣，失败按规则返还</small>
+        </div>
+
+        <!-- ★ 新增：用户信息区 ★ -->
+        <div style="border-top: 1px solid var(--border); padding-top: var(--space-md);">
+          <!-- 用户身份 -->
+          <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0;">A</div>
+            <div style="min-width: 0;">
+              <div style="font-size: var(--text-sm); font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">admin@tryonstudio.local</div>
+              <div style="font-size: var(--text-xs); color: var(--text-tertiary);">
+                <span class="badge badge-admin" style="font-size: 10px; padding: 1px 6px;">管理员</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 登录有效期 -->
+          <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: var(--space-sm); padding-left: 4px;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--success); margin-right: 4px; vertical-align: middle;"></span>
+            登录有效期至 6月17日
+          </div>
+
+          <!-- 操作链接 -->
+          <div style="display: flex; gap: var(--space-md); padding-left: 4px;">
+            <a style="font-size: var(--text-xs); color: var(--text-tertiary); text-decoration: none; cursor: pointer;">修改密码</a>
+            <a style="font-size: var(--text-xs); color: var(--danger); text-decoration: none; cursor: pointer;">登出</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main style="background: var(--bg-page); padding: var(--space-xl); overflow-y: auto;">
+        <!-- Topbar -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-xl);">
+          <div>
+            <p style="font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0;">MVP Core Workflow</p>
+            <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">AI虚拟人穿衣工作台</h1>
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--text-tertiary);">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+            <span>API 已连接</span>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+          <div style="background: var(--bg-white); border-radius: var(--radius-md); padding: var(--space-lg); border: 1px solid var(--border);">
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">12</div>
+            <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 4px;">本月任务数</div>
+            <div style="font-size: 12px; color: var(--success); margin-top: 4px;">↑ 20%</div>
+          </div>
+          <div style="background: var(--bg-white); border-radius: var(--radius-md); padding: var(--space-lg); border: 1px solid var(--border);">
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">94.2%</div>
+            <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 4px;">生成成功率</div>
+            <div style="font-size: 12px; color: var(--success); margin-top: 4px;">↑ 2.1%</div>
+          </div>
+          <div style="background: var(--bg-white); border-radius: var(--radius-md); padding: var(--space-lg); border: 1px solid var(--border);">
+            <div style="font-size: 28px; font-weight: 700; color: var(--brand);">1,200</div>
+            <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 4px;">可用额度</div>
+            <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">本月已用 146</div>
+          </div>
+          <div style="background: var(--bg-white); border-radius: var(--radius-md); padding: var(--space-lg); border: 1px solid var(--border);">
+            <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">2</div>
+            <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 4px;">进行中任务</div>
+            <a style="font-size: 12px; color: var(--brand); margin-top: 4px; display: block;">查看进度 →</a>
+          </div>
+        </div>
+
+        <!-- Workbench cards (simplified) -->
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: var(--space-lg);">
+          <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+            <!-- 生成方案 -->
+            <div style="background: var(--bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg);">
+                <div><h2 style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">生成方案</h2><p style="font-size: 13px; color: var(--text-tertiary);">描述用途，Agent 自动推荐最优参数组合</p></div>
+                <span class="badge badge-admin" style="font-size: 11px;">AI Agent</span>
+              </div>
+              <div style="width: 100%; min-height: 72px; padding: var(--space-md); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-sm); color: var(--text-placeholder); background: var(--bg-hover);">例如：适合 TikTok 上新的欧美模特短视频，同时生成商品图...</div>
+              <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <span class="badge badge-operator" style="font-weight: 400;">商品图</span>
+                <span class="badge badge-operator" style="font-weight: 400;">TikTok</span>
+                <span class="badge badge-operator" style="font-weight: 400;">Amazon</span>
+                <span class="badge badge-operator" style="font-weight: 400; background: var(--brand-light); color: var(--brand);">Instagram</span>
+              </div>
+            </div>
+
+            <!-- 上传素材 -->
+            <div style="background: var(--bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg);">
+                <div><h2 style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">上传素材</h2><p style="font-size: 13px; color: var(--text-tertiary);">上传服装图与模特图，系统自动预检</p></div>
+                <span class="badge" style="background: var(--bg-page); color: var(--text-tertiary); font-size: 11px;">待上传</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">+ 上传服装正面图</div>
+                <div style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; color: var(--text-tertiary); font-size: var(--text-sm);">+ 上传真人/模特图片</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task Summary Sidebar -->
+          <div style="background: var(--bg-white); border-radius: var(--radius-lg); padding: var(--space-lg); border: 1px solid var(--border); position: sticky; top: var(--space-xl); align-self: start;">
+            <div style="margin-bottom: var(--space-lg);">
+              <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">任务摘要</h2>
+              <p style="font-size: 13px; color: var(--text-tertiary);">提交前最终确认</p>
+            </div>
+            <div style="padding: 22px; color: var(--text-placeholder); background: var(--bg-page); border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center;">暂无任务</div>
+            <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--space-md);" disabled>提交生成任务</button>
+            <div style="margin-top: var(--space-md); padding: var(--space-sm) var(--space-md); background: var(--brand-light); border-radius: var(--radius-sm); font-size: 12px; color: var(--brand);">提交后预扣额度，失败按规则返还。预计 90-180 秒完成。</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Annotation callout -->
+    <div style="display: flex; gap: var(--space-xl); margin-top: var(--space-lg); padding: var(--space-lg); background: var(--info-light); border-radius: var(--radius-md);">
+      <div style="flex: 1;">
+        <h4 style="font-size: var(--text-sm); font-weight: 600; color: #3730A3; margin-bottom: var(--space-sm);">📌 侧边栏用户区设计要点</h4>
+        <ul style="font-size: var(--text-sm); color: #4338CA; padding-left: var(--space-lg); line-height: 1.8;">
+          <li>用户头像取邮箱首字母大写，背景色使用 brand-light</li>
+          <li>角色以 badge 形式展示（admin=紫色 / operator=灰色）</li>
+          <li>登录有效期以绿色圆点 + 文字展示，实时计算剩余天数</li>
+          <li>「修改密码」触发弹窗（见 V2-09），「登出」清除令牌并跳转登录页</li>
+          <li>admin 角色额外显示「管理后台」入口链接（新标签页打开 localhost:3001）</li>
+        </ul>
+      </div>
+      <div style="flex: 1;">
+        <h4 style="font-size: var(--text-sm); font-weight: 600; color: #3730A3; margin-bottom: var(--space-sm);">📌 主应用登录页设计要点</h4>
+        <ul style="font-size: var(--text-sm); color: #4338CA; padding-left: var(--space-lg); line-height: 1.8;">
+          <li>登录页背景使用深色渐变 + 装饰性半透明圆形光晕，与品牌调性一致</li>
+          <li>与后台登录页（V2-01）共享认证接口，但视觉上区分定位：主应用强调「AI试穿工作台」，后台强调「管理」</li>
+          <li>未勾选「记住我」时显示「7 天内保持登录」，勾选后变为「30 天内无需重新登录」</li>
+          <li>被禁用用户有独立错误提示（黄色警告），与密码错误的红色提示区分</li>
+          <li>Operator 误入后台时提示「前往主应用工作台」而非直接拒绝</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.design-file -->
+</body>
+</html>

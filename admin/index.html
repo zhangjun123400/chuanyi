@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TryOn Studio · 管理后台</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Admin Login -->
+  <div id="adminLoginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;margin-bottom:var(--space-lg);">
+        <div class="brand-mark"></div>
+        <div class="brand-text">
+          <strong>TryOn Studio</strong>
+          <span>管理后台</span>
+        </div>
+      </div>
+      <h2 style="text-align:center;margin-bottom:var(--space-lg);">管理员登录</h2>
+      <form id="adminLoginForm" class="login-form">
+        <div class="form-group">
+          <label class="form-label" for="adminLoginEmail">邮箱</label>
+          <input id="adminLoginEmail" type="email" class="form-input" placeholder="admin@tryonstudio.local" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adminLoginPassword">密码</label>
+          <input id="adminLoginPassword" type="password" class="form-input" placeholder="输入密码" required autocomplete="current-password">
+        </div>
+        <div class="flex items-center gap-sm" style="margin-top:var(--space-sm);">
+          <input id="adminLoginRemember" type="checkbox" style="accent-color:var(--brand);">
+          <label for="adminLoginRemember" class="text-sm" style="cursor:pointer;font-weight:400;" id="adminLoginRememberHint">7 天内保持登录</label>
+        </div>
+        <div id="adminLoginError" class="alert alert-danger hidden" style="margin-top:var(--space-md);"></div>
+        <button id="adminLoginSubmitBtn" type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-md);">登录</button>
+        <p class="text-xs text-muted" style="text-align:center;margin-top:var(--space-sm);">仅管理员可访问</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Identity Confirm Transition -->
+  <div id="identityConfirmOverlay" class="transition-overlay hidden">
+    <div class="transition-card">
+      <div class="transition-icon" style="background:var(--brand-light);color:var(--brand);">&#10003;</div>
+      <h2>身份确认</h2>
+      <p>检测到已登录的管理员账号</p>
+      <strong id="identityUserName" style="display:block;font-size:18px;margin-top:var(--space-sm);"></strong>
+      <span class="text-xs text-muted" id="identityUserRole"></span>
+      <div id="identityCountdown" class="text-xs text-muted" style="margin-top:var(--space-sm);"></div>
+      <button id="identityConfirmBtn" class="btn btn-primary btn-lg" style="margin-top:var(--space-lg);">进入管理后台</button>
+      <button id="identityNotMeBtn" class="btn btn-ghost btn-sm" style="display:block;margin:var(--space-sm) auto 0;color:var(--danger);">这不是我，退出登录</button>
+    </div>
+  </div>
+
+  <!-- Admin Console -->
+  <div id="adminConsole" class="admin-console hidden">
+    <header class="admin-topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-text">
+          <strong>TryOn Studio</strong>
+          <span>管理后台</span>
+        </div>
+      </div>
+      <div class="admin-topbar-right">
+        <span id="adminPageTitle" class="text-sm" style="font-weight:600;margin-right:auto;"></span>
+        <span id="adminUserCount" class="badge badge-info" style="margin-right:var(--space-md);"></span>
+        <span id="adminUserName" class="text-sm"></span>
+        <button id="adminLogoutBtn" class="btn btn-ghost btn-sm" style="color:var(--danger);">退出</button>
+      </div>
+    </header>
+
+    <div class="admin-body">
+      <nav class="admin-nav">
+        <button class="admin-nav-item active" data-admin-tab="users">用户管理</button>
+        <button class="admin-nav-item" data-admin-tab="audit">操作日志</button>
+      </nav>
+
+      <main class="admin-main">
+        <!-- Users Tab -->
+        <section id="adminUsersTab" class="admin-tab active">
+          <div class="card mb-md">
+            <div class="flex items-center gap-md flex-wrap justify-between">
+              <div class="flex items-center gap-sm">
+                <input type="search" id="userSearchInput" class="form-input" placeholder="搜索邮箱或姓名..." style="width:260px;">
+                <button id="userSearchBtn" class="btn btn-secondary btn-sm">搜索</button>
+              </div>
+              <button id="createUserBtn" class="btn btn-primary btn-sm">+ 新建用户</button>
+            </div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div id="userTableContainer">
+              <div class="skeleton-table" id="userTableSkeleton"></div>
+            </div>
+          </div>
+          <div id="userPagination" class="flex items-center justify-between mt-md"></div>
+        </section>
+
+        <!-- Audit Tab -->
+        <section id="adminAuditTab" class="admin-tab">
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div id="auditTableContainer">
+              <div class="skeleton-table" id="auditTableSkeleton"></div>
+            </div>
+          </div>
+          <div id="auditPagination" class="flex items-center justify-between mt-md"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create/Edit User Modal -->
+  <div id="userFormModal" class="media-modal" aria-hidden="true">
+    <div class="media-modal-backdrop" data-close-user-modal></div>
+    <div class="media-modal-body" style="max-width:500px;">
+      <button class="modal-close" data-close-user-modal>关闭</button>
+      <h2 id="userFormTitle" style="margin-bottom:var(--space-lg);">新建用户</h2>
+      <form id="userForm">
+        <input id="userFormEditId" type="hidden">
+        <div class="form-group">
+          <label class="form-label" for="userFormName">姓名</label>
+          <input id="userFormName" type="text" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="userFormEmail">邮箱</label>
+          <input id="userFormEmail" type="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="userFormRole">角色</label>
+          <select id="userFormRole" class="form-select">
+            <option value="admin">管理员</option>
+            <option value="operator" selected>运营</option>
+          </select>
+        </div>
+        <div id="userFormPasswordSection" class="form-group">
+          <label class="form-label" for="userFormPassword">密码（留空则自动生成）</label>
+          <input id="userFormPassword" type="password" class="form-input" placeholder="自动生成随机密码" autocomplete="new-password">
+        </div>
+        <div id="userFormCreatedPassword" class="alert alert-info hidden" style="margin-top:var(--space-md);"></div>
+        <div id="userFormError" class="alert alert-danger hidden" style="margin-top:var(--space-md);"></div>
+        <div class="flex gap-sm mt-md">
+          <button id="userFormSubmitBtn" type="submit" class="btn btn-primary" style="flex:1;">保存</button>
+          <button id="userFormCancelBtn" type="button" class="btn btn-secondary" data-close-user-modal>取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js?v=6"></script>
+</body>
+</html>

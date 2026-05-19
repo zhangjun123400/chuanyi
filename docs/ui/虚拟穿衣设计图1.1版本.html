@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI虚拟人穿衣 SaaS v1.1 补充UI设计</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #101828;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --blue: #2563eb;
+      --blue-2: #eff6ff;
+      --green: #16a34a;
+      --green-2: #ecfdf3;
+      --amber: #d97706;
+      --amber-2: #fffbeb;
+      --red: #dc2626;
+      --red-2: #fef2f2;
+      --slate: #0f172a;
+      --shadow: 0 20px 60px rgba(16,24,40,.08);
+      --font: Inter, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+      letter-spacing: 0;
+    }
+    .page {
+      padding: 36px;
+      display: grid;
+      gap: 28px;
+    }
+    .hero, .screen {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .hero {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 12px; font-size: 34px; line-height: 1.15; }
+    h2 { margin: 0; font-size: 16px; }
+    h3 { margin-bottom: 8px; font-size: 14px; }
+    p { color: var(--muted); line-height: 1.6; }
+    .hero p { margin-bottom: 0; max-width: 760px; }
+    .hero-card {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      background: var(--blue-2);
+    }
+    .hero-card strong { font-size: 24px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #f2f4f7;
+      color: #344054;
+      font-size: 11px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .tag.blue { color: var(--blue); background: var(--blue-2); }
+    .tag.green { color: var(--green); background: var(--green-2); }
+    .tag.amber { color: var(--amber); background: var(--amber-2); }
+    .tag.red { color: var(--red); background: var(--red-2); }
+    .screen-title {
+      min-height: 58px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .screen-title p { margin: 4px 0 0; font-size: 12px; }
+    .app {
+      min-height: 860px;
+      display: grid;
+      grid-template-columns: 236px 1fr;
+      background: #f7f8fa;
+    }
+    .side {
+      padding: 22px 16px;
+      background: var(--slate);
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .brand {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .mark {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: linear-gradient(135deg, #60a5fa, #14b8a6);
+    }
+    .nav { display: grid; gap: 6px; }
+    .nav div {
+      height: 40px;
+      border-radius: 8px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .nav .active { background: rgba(255,255,255,.1); color: #fff; }
+    .credit {
+      margin-top: auto;
+      padding: 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      min-height: 118px;
+    }
+    .credit span { display: block; color: #94a3b8; font-size: 12px; }
+    .credit b { display: block; color: #fff; font-size: 28px; line-height: 1.15; margin: 8px 0; }
+    .main { padding: 24px; overflow: visible; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .topbar h2 { font-size: 24px; }
+    .connected {
+      height: 34px;
+      border-radius: 999px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 18px;
+      min-height: 760px;
+      min-width: 0;
+    }
+    .stack { display: grid; gap: 14px; overflow: visible; align-content: start; }
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      min-width: 0;
+    }
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .panel-head p { margin: 4px 0 0; font-size: 12px; }
+    .agent-input {
+      display: grid;
+      gap: 12px;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      background: var(--blue-2);
+      padding: 14px;
+    }
+    .quick-options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+    }
+    .option-box {
+      min-height: 72px;
+      border: 1px solid #dbeafe;
+      border-radius: 8px;
+      background: rgba(255,255,255,.72);
+      padding: 10px;
+      display: grid;
+      align-content: start;
+      gap: 5px;
+    }
+    .option-box.active {
+      border-color: #60a5fa;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .option-box b {
+      display: block;
+      color: #1e3a8a;
+      font-size: 12px;
+    }
+    .option-box span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .agent-compose {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+    .fake-textarea {
+      min-height: 80px;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      background: #fff;
+      color: #344054;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .btn {
+      height: 38px;
+      border-radius: 8px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 750;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn.disabled { background: #cbd5e1; border-color: #cbd5e1; color: #fff; }
+    .btn.full { width: 100%; }
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+    }
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+    .upload-card {
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      background: #fbfdff;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      gap: 12px;
+      align-items: center;
+      min-height: 142px;
+    }
+    .upload-preview {
+      width: 94px;
+      height: 114px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(37,99,235,.14), rgba(20,184,166,.12)),
+        repeating-linear-gradient(45deg, #eef2ff 0, #eef2ff 8px, #f8fafc 8px, #f8fafc 16px);
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-preview.garment:after {
+      content: "";
+      position: absolute;
+      left: 28px;
+      top: 28px;
+      width: 38px;
+      height: 58px;
+      border-radius: 14px 14px 7px 7px;
+      background: #111827;
+      box-shadow: -22px 5px 0 -12px #111827, 22px 5px 0 -12px #111827;
+    }
+    .upload-preview.model:before {
+      content: "";
+      position: absolute;
+      left: 31px;
+      top: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+    }
+    .upload-preview.model:after {
+      content: "";
+      position: absolute;
+      left: 22px;
+      bottom: 16px;
+      width: 50px;
+      height: 52px;
+      border-radius: 24px 24px 8px 8px;
+      background: rgba(255,255,255,.82);
+    }
+    .upload-meta b {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+    .upload-meta p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .asset-detail {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 8px;
+    }
+    .inline-quality-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .inline-quality-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 11px;
+      display: grid;
+      gap: 6px;
+    }
+    .inline-quality-box b {
+      font-size: 12px;
+    }
+    .inline-quality-box span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .mini {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .mini b { display: block; margin-bottom: 5px; font-size: 13px; }
+    .mini span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .check-list { display: grid; gap: 9px; }
+    .check {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .status {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #d1fae5; border: 5px solid var(--green);
+    }
+    .status.warn { background: #fef3c7; border-color: #f59e0b; }
+    .status.bad { background: #fee2e2; border-color: var(--red); }
+    .status.wait { background: #f2f4f7; border-color: #98a2b3; }
+    .check b { display: block; font-size: 12px; margin-bottom: 2px; }
+    .check span { color: var(--muted); font-size: 11px; }
+    .side-stack { display: grid; gap: 14px; align-content: start; }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 12px;
+    }
+    .summary-line span { color: var(--muted); }
+    .summary-line b { text-align: right; }
+    .notice {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.55;
+      border: 1px solid #fde68a;
+      background: var(--amber-2);
+      color: #92400e;
+    }
+    .detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 18px;
+      min-height: 760px;
+    }
+    .timeline { display: grid; gap: 10px; }
+    .step {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      align-items: start;
+    }
+    .num {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: grid; place-items: center;
+      color: var(--blue);
+      background: var(--blue-2);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .step.done .num { color: var(--green); background: #dcfce7; }
+    .step.fail { border-color: #fecaca; background: #fff7f7; }
+    .step b { display: block; margin-bottom: 3px; font-size: 12px; }
+    .step span { color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+    .result-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .media {
+      height: 164px;
+      position: relative;
+      background:
+        linear-gradient(135deg, rgba(37,99,235,.18), rgba(20,184,166,.13)),
+        repeating-linear-gradient(45deg, #eef2ff 0, #eef2ff 8px, #f8fafc 8px, #f8fafc 16px);
+    }
+    .media.video:before {
+      content: "MP4 · 9:16 · 30s";
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.84);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .media.failed:after {
+      content: "生成失败";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(15,23,42,.68);
+      color: #fff;
+      font-weight: 800;
+    }
+    .play {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--line);
+    }
+    .play:after {
+      content: "";
+      position: absolute;
+      left: 18px; top: 13px;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 13px solid var(--blue);
+    }
+    .result-body { padding: 11px; display: grid; gap: 8px; }
+    .result-body b { font-size: 12px; }
+    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .small {
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 11px;
+      font-weight: 750;
+      color: #344054;
+    }
+    .small.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .small.disabled { opacity: .46; }
+    .model-filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .filter {
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      background: #fff;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+    .model-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 12px;
+    }
+    .avatar {
+      height: 146px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: linear-gradient(180deg, #e0f2fe, #f8fafc);
+      position: relative;
+      overflow: hidden;
+    }
+    .avatar:before {
+      content: "";
+      position: absolute;
+      left: calc(50% - 28px);
+      top: 22px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.9);
+    }
+    .avatar:after {
+      content: "";
+      position: absolute;
+      left: calc(50% - 46px);
+      bottom: 18px;
+      width: 92px;
+      height: 84px;
+      border-radius: 42px 42px 10px 10px;
+      background: rgba(255,255,255,.82);
+    }
+    .model-card h3 { margin: 0 0 6px; font-size: 14px; }
+    .model-card p { margin: 0 0 8px; font-size: 12px; }
+    .quality-grid {
+      display: grid;
+      grid-template-columns: 330px minmax(0,1fr) 320px;
+      gap: 18px;
+      min-height: 760px;
+    }
+    .quality-preview {
+      height: 420px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg,#fff,#eef2f7);
+      position: relative;
+      overflow: hidden;
+    }
+    .quality-garment {
+      position: absolute;
+      left: 50%;
+      top: 92px;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 230px;
+      border-radius: 28px 28px 14px 14px;
+      background: #111827;
+      box-shadow: -46px 20px 0 -30px #111827, 46px 20px 0 -30px #111827;
+    }
+    .quality-check {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 11px;
+      background: #fff;
+    }
+    .quality-check + .quality-check { margin-top: 10px; }
+    .q-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .q-dot.warn { background: var(--amber); }
+    .q-dot.bad { background: var(--red); }
+    .quality-check b { display: block; font-size: 12px; margin-bottom: 3px; }
+    .quality-check span { display: block; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .score-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 13px;
+      background: #fff;
+      display: grid;
+      gap: 8px;
+    }
+    .score-card + .score-card { margin-top: 10px; }
+    .score-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .quality-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    .quality-bar i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+    .quality-bar.warn i { background: var(--amber); }
+    .quality-bar.bad i { background: var(--red); }
+    .quality-results {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+    .quality-result-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .quality-result-card .media {
+      height: 190px;
+    }
+    .media.unusable:after {
+      content: "不可用";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(15,23,42,.66);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+    .metric-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 14px;
+    }
+    .metric-card b {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    .metric-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 1200px) {
+      .page { padding: 20px; }
+      .hero { grid-template-columns: 1fr; }
+      .app { width: 1200px; }
+      .screen { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">TryOn Studio · v1.1 UI Addendum</p>
+        <h1>可用性增强迭代补充 UI 设计</h1>
+        <p>围绕 PRD v1.1 和 v1.0.1 商用品质提升专项，保留原有上传、模特、生成、任务详情、结果管理功能，并补充质量预检、质量链路、高清增强和商用结果分级。</p>
+      </div>
+      <div class="hero-card">
+        <strong>10 个 P0 补充模块</strong>
+        <div class="tags">
+          <span class="tag blue">智能体入口</span>
+          <span class="tag green">生成前检查</span>
+          <span class="tag blue">任务详情</span>
+          <span class="tag green">结果管理</span>
+          <span class="tag amber">API 降级</span>
+          <span class="tag blue">模特增强</span>
+          <span class="tag green">质量预检</span>
+          <span class="tag amber">自动修复</span>
+          <span class="tag blue">高清增强</span>
+          <span class="tag red">不可用拦截</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>01 · 智能试穿工作台 + 商用品质预检</h2>
+          <p>把生成方案、上传服装/模特、质量预检、参数策略和提交确认放在同一条创建任务流程里</p>
+        </div>
+      </div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="mark"></div><div>TryOn Studio</div></div>
+          <nav class="nav">
+            <div class="active">智能试穿</div>
+            <div>新建试穿任务</div>
+            <div>任务历史</div>
+            <div>结果管理</div>
+            <div>系统模特库</div>
+            <div>额度流水</div>
+          </nav>
+          <div class="credit"><span>可用额度</span><b>842</b><span>本次预计 212 额度</span></div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Agent-led Workflow · Quality Gate</p><h2>智能试穿 / 新建试穿任务</h2></div>
+            <div class="connected"><i class="dot"></i> 后端已连接</div>
+          </div>
+          <div class="workspace">
+            <div class="stack">
+              <section class="panel">
+                <div class="panel-head">
+                  <div><h2>生成方案</h2><p>先点选目标，再补一句自然语言，智能体会生成初步方案</p></div>
+                  <span class="tag blue">智能体主入口</span>
+                </div>
+                <div class="agent-input">
+                  <div class="quick-options">
+                    <div class="option-box active"><b>输出类型</b><span>图片 + 视频</span></div>
+                    <div class="option-box active"><b>平台用途</b><span>Shopify + TikTok</span></div>
+                    <div class="option-box"><b>模特偏好</b><span>欧美女性 / 全身站姿</span></div>
+                    <div class="option-box"><b>视觉风格</b><span>干净棚拍 / 白底</span></div>
+                    <div class="option-box"><b>图片数量</b><span>4 张商品图</span></div>
+                    <div class="option-box"><b>视频时长</b><span>15 秒 / 30 秒</span></div>
+                    <div class="option-box"><b>动作模板</b><span>轻微转身优先</span></div>
+                    <div class="option-box"><b>质量策略</b><span>保留纹理 + 自动质检</span></div>
+                  </div>
+                  <div class="agent-compose">
+                    <div class="fake-textarea">把这件连衣裙生成 4 张 Shopify 商品图和一条 30 秒 TikTok 试穿视频，画面干净，欧美模特，全身展示。</div>
+                    <div class="row-actions"><button class="btn primary">生成方案</button><button class="btn">清空</button></div>
+                  </div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-head"><div><h2>智能体生成方案</h2><p>上传前给初步方案，上传后升级为可提交精准方案</p></div><button class="btn">应用到参数</button></div>
+                <div class="plan-grid">
+                  <div class="mini"><b>输出建议</b><span>图片 + 视频；图片 4 张，视频建议 15-30 秒。</span></div>
+                  <div class="mini"><b>规格建议</b><span>商品图 4:5，TikTok 视频 9:16，背景干净棚拍。</span></div>
+                  <div class="mini"><b>模特建议</b><span>女性，全身站姿，适合裙装；慢走模板需确认风险。</span></div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-head">
+                  <div><h2>上传素材</h2><p>保留 1.0 首页核心输入：服装图和虚拟人 / 模特图</p></div>
+                  <span class="tag green">素材已通过</span>
+                </div>
+                <div class="asset-grid">
+                  <div class="upload-card">
+                    <div class="upload-preview garment"></div>
+                    <div class="upload-meta">
+                      <b>上传服装图</b>
+                      <p>支持 JPG / PNG / WebP；建议服装平铺、单件主体、背景干净。</p>
+                      <div class="tags"><span class="tag green">预检通过</span><span class="tag blue">连衣裙</span><span class="tag">黑色</span></div>
+                      <button class="btn" style="margin-top:10px">重新上传</button>
+                    </div>
+                  </div>
+                  <div class="upload-card">
+                    <div class="upload-preview model"></div>
+                    <div class="upload-meta">
+                      <b>选择虚拟人 / 模特</b>
+                      <p>可使用系统推荐模特，也可上传真人正面全身照进行检测。</p>
+                      <div class="tags"><span class="tag green">Ava 已选择</span><span class="tag blue">视频可用</span><span class="tag">适配 92</span></div>
+                      <div class="row-actions" style="margin-top:10px"><button class="btn">切换模特</button><button class="btn">上传真人</button></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="asset-detail">
+                  <div class="mini"><b>品类识别</b><span>连衣裙 / 修身 / 膝上长度</span></div>
+                  <div class="mini"><b>清晰度</b><span>长边 1600px，通过</span></div>
+                  <div class="mini"><b>主体完整</b><span>无遮挡，通过</span></div>
+                  <div class="mini"><b>模特姿态</b><span>全身站姿，适合裙装</span></div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-head">
+                  <div><h2>商用品质预检</h2><p>作为上传后的下一步，直接影响参数策略和提交按钮状态</p></div>
+                  <span class="tag amber">2 项风险</span>
+                </div>
+                <div class="inline-quality-grid">
+                  <div class="inline-quality-box">
+                    <div class="tags"><span class="tag green">通过</span><span class="tag">清晰度</span></div>
+                    <b>长边 1800px，面料纹理可识别</b>
+                    <span>满足最低商用检测标准，推荐继续开启高清增强。</span>
+                  </div>
+                  <div class="inline-quality-box">
+                    <div class="tags"><span class="tag amber">风险</span><span class="tag">裙摆边缘</span></div>
+                    <b>裙摆接近图片边界</b>
+                    <span>生成后可能出现衣摆融化或缺失，建议裁切时保留完整边缘。</span>
+                  </div>
+                  <div class="inline-quality-box">
+                    <div class="tags"><span class="tag amber">风险</span><span class="tag">图案复杂度</span></div>
+                    <b>细密条纹/格纹可能漂移</b>
+                    <span>建议至少生成 4 张候选，并启用服装一致性质检。</span>
+                  </div>
+                  <div class="inline-quality-box">
+                    <div class="tags"><span class="tag green">通过</span><span class="tag">模特适配</span></div>
+                    <b>Ava · 全身正面站姿</b>
+                    <span>适合裙装展示，可降低衣领、腰线和裙摆变形概率。</span>
+                  </div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-head"><div><h2>生成前检查</h2><p>解释提交按钮不可用的具体原因</p></div><span class="tag amber">1 项待确认</span></div>
+                <div class="check-list">
+                  <div class="check"><i class="status"></i><div><b>服装图</b><span>已通过，识别为黑色修身连衣裙。</span></div><button class="small">查看</button></div>
+                  <div class="check"><i class="status warn"></i><div><b>模特</b><span>姿态适配 82 分，慢走视频有纹理漂移风险。</span></div><button class="small">确认风险</button></div>
+                  <div class="check"><i class="status warn"></i><div><b>商用品质</b><span>裙摆边缘接近裁切区，建议至少生成 4 张候选并开启高清增强。</span></div><button class="small">应用建议</button></div>
+                  <div class="check"><i class="status"></i><div><b>额度</b><span>余额 842，本次预计 212，额度充足。</span></div><span class="tag green">通过</span></div>
+                  <div class="check"><i class="status"></i><div><b>参数</b><span>输出类型、数量、画幅、视频模板均完整。</span></div><span class="tag green">通过</span></div>
+                  <div class="check"><i class="status bad"></i><div><b>API 能力</b><span>当前供应商不建议 30 秒慢走展示。</span></div><button class="small primary">应用降级</button></div>
+                </div>
+              </section>
+            </div>
+            <aside class="side-stack">
+              <section class="panel">
+                <h3>任务摘要</h3>
+                <div class="summary-line"><span>输出类型</span><b>图片 + 视频</b></div>
+                <div class="summary-line"><span>图片</span><b>4 张 · 4:5</b></div>
+                <div class="summary-line"><span>视频</span><b>15 秒 · 9:16 · 轻微转身</b></div>
+                <div class="summary-line"><span>质量策略</span><b>4候选 · 2x高清</b></div>
+                <div class="summary-line"><span>商用门槛</span><b>综合 ≥80</b></div>
+                <div class="summary-line"><span>预计消耗</span><b>122 额度</b></div>
+                <div class="notice">已从 30 秒慢走降级为 15 秒轻微转身，以匹配当前 API 能力并降低失败风险。</div>
+                <button class="btn primary full" style="margin-top:12px">确认并提交生成</button>
+              </section>
+              <section class="panel">
+                <h3>API 能力边界</h3>
+                <div class="tags">
+                  <span class="tag green">图片试穿支持</span>
+                  <span class="tag green">9:16 视频支持</span>
+                  <span class="tag amber">30 秒部分支持</span>
+                  <span class="tag red">慢走高风险</span>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>02 · 任务详情与结果管理</h2>
+          <p>历史任务可进入详情，查看输入、参数、阶段状态、结果、失败原因和智能体建议</p>
+        </div>
+        <button class="btn primary">批量下载成功素材</button>
+      </div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="mark"></div><div>TryOn Studio</div></div>
+          <nav class="nav">
+            <div>智能试穿</div>
+            <div>新建试穿任务</div>
+            <div class="active">任务历史</div>
+            <div>结果管理</div>
+            <div>系统模特库</div>
+            <div>额度流水</div>
+          </nav>
+          <div class="credit"><span>任务编号</span><b style="font-size:18px">TRY-0931</b><span>部分失败 · 已返还视频差额</span></div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Task Detail</p><h2>图片 + 视频任务详情</h2></div>
+            <div class="tags"><span class="tag amber">部分失败</span><span class="tag blue">122 额度</span><span class="tag green">3 个成功素材</span></div>
+          </div>
+          <div class="detail-layout">
+            <div class="stack">
+              <section class="panel">
+                <div class="panel-head"><div><h2>阶段状态</h2><p>失败时定位到具体阶段，并给出可执行建议</p></div></div>
+                <div class="timeline">
+                  <div class="step done"><div class="num">1</div><div><b>预处理完成</b><span>服装识别、模特姿态、API 能力快照均已完成。</span></div><span class="tag green">完成</span></div>
+                  <div class="step done"><div class="num">2</div><div><b>图片生成完成</b><span>4 张图片生成，3 张可下载，1 张待修复。</span></div><span class="tag green">完成</span></div>
+                  <div class="step fail"><div class="num">3</div><div><b>视频帧一致性检查失败</b><span>第 8-11 秒出现衣服纹理漂移，建议改用 15 秒轻微转身模板重新生成。</span></div><span class="tag red">失败</span></div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-head">
+                  <div><h2>结果管理</h2><p>图片区和视频区分组管理；失败结果不可下载</p></div>
+                  <div class="tags"><span class="tag blue">全部</span><span class="tag">图片</span><span class="tag">视频</span><span class="tag red">失败</span></div>
+                </div>
+                <div class="results">
+                  <article class="result-card"><div class="media"></div><div class="result-body"><b>结果图 01</b><div class="tags"><span class="tag green">推荐</span><span class="tag blue">评分 92</span></div><div class="row-actions"><button class="small primary">下载</button><button class="small">查看</button></div></div></article>
+                  <article class="result-card"><div class="media"></div><div class="result-body"><b>结果图 02</b><div class="tags"><span class="tag blue">可用</span><span class="tag">评分 84</span></div><div class="row-actions"><button class="small primary">下载</button><button class="small">查看</button></div></div></article>
+                  <article class="result-card"><div class="media video failed"></div><div class="result-body"><b>试穿视频 01</b><div class="tags"><span class="tag red">失败</span><span class="tag amber">纹理漂移</span></div><div class="row-actions"><button class="small disabled">播放</button><button class="small primary">重新生成</button></div></div></article>
+                </div>
+              </section>
+            </div>
+            <aside class="side-stack">
+              <section class="panel">
+                <h3>输入素材</h3>
+                <div class="summary-line"><span>服装</span><b>黑色连衣裙</b></div>
+                <div class="summary-line"><span>模特</span><b>Ava · 全身站姿</b></div>
+                <div class="summary-line"><span>适配评分</span><b>92</b></div>
+              </section>
+              <section class="panel">
+                <h3>生成参数</h3>
+                <div class="summary-line"><span>图片</span><b>4 张 · 4:5</b></div>
+                <div class="summary-line"><span>视频</span><b>30 秒 · 慢走展示</b></div>
+                <div class="summary-line"><span>API</span><b>Provider A</b></div>
+              </section>
+              <section class="panel">
+                <h3>智能体建议</h3>
+                <div class="notice">视频失败集中在帧一致性检查。建议缩短到 15 秒，动作模板改为轻微转身，并保留当前图片结果。</div>
+                <button class="btn primary full" style="margin-top:12px">应用建议重新生成视频</button>
+              </section>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>03 · 系统模特库增强</h2>
+          <p>增加筛选、适配评分、输出能力、风险标签和使用按钮</p>
+        </div>
+      </div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="mark"></div><div>TryOn Studio</div></div>
+          <nav class="nav">
+            <div>智能试穿</div>
+            <div>新建试穿任务</div>
+            <div>任务历史</div>
+            <div>结果管理</div>
+            <div class="active">系统模特库</div>
+            <div>额度流水</div>
+          </nav>
+          <div class="credit"><span>可用额度</span><b>842</b><span>模特选择不消耗额度</span></div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Model Library</p><h2>系统模特库</h2></div>
+            <button class="btn">上传真人模特</button>
+          </div>
+          <section class="panel">
+            <div class="model-filters">
+              <div class="filter">性别：全部</div>
+              <div class="filter">体型：全部</div>
+              <div class="filter">姿态：全身站姿</div>
+              <div class="filter">适用品类：裙装</div>
+              <div class="filter">视频能力：可用</div>
+            </div>
+            <div class="model-grid">
+              <article class="model-card">
+                <div class="avatar"></div>
+                <h3>Ava</h3>
+                <p>女性 · 全身站姿 · 适配评分 92</p>
+                <div class="tags"><span class="tag green">图片可用</span><span class="tag green">视频可用</span><span class="tag blue">裙装推荐</span></div>
+                <button class="btn primary full" style="margin-top:10px">使用该模特</button>
+              </article>
+              <article class="model-card">
+                <div class="avatar" style="background:linear-gradient(180deg,#ede9fe,#f8fafc)"></div>
+                <h3>Noa</h3>
+                <p>女性 · 半身姿态 · 适配评分 68</p>
+                <div class="tags"><span class="tag green">图片可用</span><span class="tag amber">视频风险</span><span class="tag amber">不适合裙装</span></div>
+                <button class="btn full" style="margin-top:10px">查看风险</button>
+              </article>
+              <article class="model-card">
+                <div class="avatar" style="background:linear-gradient(180deg,#dcfce7,#f8fafc)"></div>
+                <h3>Mia</h3>
+                <p>女性 · 慢走展示 · 适配评分 86</p>
+                <div class="tags"><span class="tag green">图片可用</span><span class="tag green">视频可用</span><span class="tag amber">慢走高成本</span></div>
+                <button class="btn primary full" style="margin-top:10px">使用该模特</button>
+              </article>
+              <article class="model-card">
+                <div class="avatar" style="background:linear-gradient(180deg,#fee2e2,#f8fafc)"></div>
+                <h3>Leo</h3>
+                <p>男性 · 全身站姿 · 适配评分 78</p>
+                <div class="tags"><span class="tag green">图片可用</span><span class="tag blue">上衣推荐</span><span class="tag">授权已确认</span></div>
+                <button class="btn primary full" style="margin-top:10px">使用该模特</button>
+              </article>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>04 · 任务详情页 · 质量链路嵌入态</h2>
+          <p>质量链路融合进原任务详情页的阶段状态，不再作为独立模块跳出流程</p>
+        </div>
+      </div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="mark"></div><div>TryOn Studio</div></div>
+          <nav class="nav">
+            <div>智能试穿</div>
+            <div>新建试穿任务</div>
+            <div class="active">任务历史</div>
+            <div>结果管理</div>
+            <div>系统模特库</div>
+            <div>额度流水</div>
+          </nav>
+          <div class="credit"><span>任务状态</span><b style="font-size:18px">高清增强中</b><span>候选图 01 已达到推荐倾向</span></div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Task Detail · Quality Pipeline</p><h2>任务详情 TRY-Q-001</h2></div>
+            <div class="tags"><span class="tag blue">4 张候选</span><span class="tag green">自动修复开启</span><span class="tag blue">高清增强 72%</span></div>
+          </div>
+          <div class="detail-layout">
+            <div class="stack">
+              <section class="panel">
+                <div class="panel-head"><div><h2>阶段状态</h2><p>在原任务详情的状态流中加入质检、修复、高清增强和推荐筛选</p></div></div>
+                <div class="timeline">
+                  <div class="step done"><div class="num">1</div><div><b>试穿生成</b><span>调用虚拟试穿模型生成多张候选图。</span></div><span class="tag green">完成</span></div>
+                  <div class="step done"><div class="num">2</div><div><b>AI 质量检测</b><span>检查服装自然度、一致性、清晰度、人体自然度和背景质量。</span></div><span class="tag green">完成</span></div>
+                  <div class="step done"><div class="num">3</div><div><b>自动修复</b><span>修复轻微衣摆边缘、袖口错位和边缘污染。</span></div><span class="tag green">完成</span></div>
+                  <div class="step active"><div class="num">4</div><div><b>高清增强</b><span>进行 2x / 4x 超分和面料纹理增强，生成可商用下载图。</span></div><span class="tag blue">72%</span></div>
+                  <div class="step"><div class="num">5</div><div><b>推荐筛选</b><span>只把达到商用门槛的结果标记为推荐。</span></div><span class="tag">等待</span></div>
+                </div>
+              </section>
+            </div>
+            <aside class="side-stack">
+              <section class="panel">
+                <h3>候选质量概览</h3>
+                <div class="score-card"><div class="score-line"><span>候选图 01</span><b>推荐倾向 86</b></div><div class="quality-bar"><i style="width:86%"></i></div></div>
+                <div class="score-card"><div class="score-line"><span>候选图 02</span><b>可用倾向 78</b></div><div class="quality-bar"><i style="width:78%"></i></div></div>
+                <div class="score-card"><div class="score-line"><span>候选图 03</span><b>待修复 64</b></div><div class="quality-bar warn"><i style="width:64%"></i></div></div>
+                <div class="score-card"><div class="score-line"><span>候选图 04</span><b>不可用 39</b></div><div class="quality-bar bad"><i style="width:39%"></i></div></div>
+                <div class="notice">任务生成成功不等于商用成功。至少 1 张推荐图通过门槛，才算商用成功。</div>
+              </section>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>05 · 结果管理页 · 商用品质分级嵌入态</h2>
+          <p>保留原结果管理操作，把推荐、可用、待修复、不可用作为结果卡质量状态</p>
+        </div>
+        <button class="btn primary">下载推荐高清图</button>
+      </div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="mark"></div><div>TryOn Studio</div></div>
+          <nav class="nav">
+            <div>智能试穿</div>
+            <div>新建试穿任务</div>
+            <div>任务历史</div>
+            <div class="active">结果管理</div>
+            <div>系统模特库</div>
+            <div>额度流水</div>
+          </nav>
+          <div class="credit"><span>可下载素材</span><b>2</b><span>不可用结果不允许下载高清</span></div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div><p class="eyebrow">Result Management · Commercial Quality</p><h2>结果管理 / 商用品质分级</h2></div>
+            <div class="tags"><span class="tag green">1 推荐</span><span class="tag blue">1 可用</span><span class="tag amber">1 待修复</span><span class="tag red">1 不可用</span></div>
+          </div>
+          <section class="panel">
+            <div class="result-toolbar">
+              <div class="tabs"><span class="tab active">全部</span><span class="tab">推荐</span><span class="tab">可用</span><span class="tab">待修复</span><span class="tab">不可用</span></div>
+              <div class="tags"><span class="tag blue">按商用分排序</span><span class="tag">高清状态</span></div>
+            </div>
+            <div class="quality-results" style="padding:16px">
+              <article class="quality-result-card">
+                <div class="media"></div>
+                <div class="result-body"><b>结果 01</b><div class="tags"><span class="tag green">推荐 86</span><span class="tag blue">2048px</span></div><div class="video-meta">自然度 84 · 一致性 88 · 清晰度 91</div><div class="row-actions"><button class="small primary">下载高清</button><button class="small">查看评分</button></div></div>
+              </article>
+              <article class="quality-result-card">
+                <div class="media"></div>
+                <div class="result-body"><b>结果 02</b><div class="tags"><span class="tag blue">可用 78</span><span class="tag">轻微瑕疵</span></div><div class="video-meta">清晰度已增强，可用于基础商品展示</div><div class="row-actions"><button class="small primary">下载</button><button class="small">重新增强</button></div></div>
+              </article>
+              <article class="quality-result-card">
+                <div class="media"></div>
+                <div class="result-body"><b>结果 03</b><div class="tags"><span class="tag amber">待修复 64</span><span class="tag amber">裙摆异常</span></div><div class="video-meta">局部问题明显，但有修复价值</div><div class="row-actions"><button class="small primary">自动修复</button><button class="small">重新生成</button></div></div>
+              </article>
+              <article class="quality-result-card">
+                <div class="media unusable"></div>
+                <div class="result-body"><b>结果 04</b><div class="tags"><span class="tag red">不可用 39</span><span class="tag red">严重变形</span></div><div class="video-meta">商品信息失真，不允许标记推荐或下载高清</div><div class="row-actions"><button class="small disabled">下载</button><button class="small">查看原因</button></div></div>
+              </article>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>06 · 内部测试集看板</h2>
+          <p>P1 内部使用：按固定测试集跟踪是否达到收费上线门槛</p>
+        </div>
+      </div>
+      <div style="padding:18px">
+        <div class="metric-grid">
+          <div class="metric-card"><b>76%</b><span>每任务至少 1 张可商用率，目标 ≥80%</span><div class="quality-bar warn" style="margin-top:12px"><i style="width:76%"></i></div></div>
+          <div class="metric-card"><b>68%</b><span>服装自然度通过率，目标 ≥70%</span><div class="quality-bar warn" style="margin-top:12px"><i style="width:68%"></i></div></div>
+          <div class="metric-card"><b>18%</b><span>低清晰度率，目标 ≤10%</span><div class="quality-bar bad" style="margin-top:12px"><i style="width:18%"></i></div></div>
+          <div class="metric-card"><b>21%</b><span>严重变形率，目标 ≤15%</span><div class="quality-bar bad" style="margin-top:12px"><i style="width:21%"></i></div></div>
+          <div class="metric-card"><b>44%</b><span>高清可商用率，目标 ≥50%</span><div class="quality-bar warn" style="margin-top:12px"><i style="width:44%"></i></div></div>
+          <div class="metric-card"><b>No-Go</b><span>当前未达到 ≥80% 商用成功率，不建议收费上线</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

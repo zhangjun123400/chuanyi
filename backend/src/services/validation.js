@@ -1,9 +1,5 @@
 const { isRemoteUrl } = require("./garment");
-
-const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
-const PROVIDER_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const PROVIDER_MIN_IMAGE_EDGE = 150;
-const PROVIDER_MAX_IMAGE_EDGE = 4096;
+const { MAX_IMAGE_UPLOAD_BYTES, PROVIDER_MAX_IMAGE_BYTES, PROVIDER_MIN_IMAGE_EDGE, PROVIDER_MAX_IMAGE_EDGE } = require("./constants");
 
 function validateAliyunTryonInputs({ garment, model }) {
   const errors = [];

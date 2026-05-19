@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI虚拟人穿衣 SaaS 工作台 · 设计图 v1.2.1</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS — 基于涂鸦开发者平台设计语言
+   ============================================================ */
+:root {
+  --brand: #2D6CF6;
+  --brand-hover: #1E54D4;
+  --brand-light: #EEF3FE;
+  --brand-soft: #D6E4FD;
+  --success: #16C47F;
+  --success-light: #E8F9F2;
+  --warning: #F59E0B;
+  --warning-light: #FFF8E6;
+  --danger: #EF4444;
+  --danger-light: #FEF2F2;
+  --info: #6366F1;
+  --gray-50: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1E293B;
+  --gray-900: #0F172A;
+  --sidebar-bg: #0B1120;
+  --sidebar-hover: #1A2744;
+  --sidebar-active: #1E3A6E;
+  --sidebar-text: #94A3B8;
+  --sidebar-text-active: #FFFFFF;
+  --bg: #F1F5F9;
+  --surface: #FFFFFF;
+  --surface-alt: #F8FAFC;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.04), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.06), 0 4px 6px rgba(0,0,0,.04);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,.08), 0 10px 10px rgba(0,0,0,.03);
+  --ease: cubic-bezier(.4,0,.2,1);
+  --fast: 150ms;
+  --normal: 250ms;
+  --slow: 400ms;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  font-size: 14px; line-height: 1.6;
+  color: var(--gray-800); background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  background: var(--sidebar-bg);
+  padding: var(--space-lg);
+  display: flex; flex-direction: column; gap: var(--space-xl);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: var(--space-md); }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--brand), #818CF8);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 16px;
+}
+.brand-mark::after { content: "T"; }
+.brand-text strong { display: block; color: #fff; font-size: 15px; line-height: 1.3; }
+.brand-text span { color: var(--sidebar-text); font-size: 12px; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  border: none; background: transparent;
+  color: var(--sidebar-text); font-size: 14px;
+  cursor: pointer; transition: all var(--fast) var(--ease);
+  text-align: left; width: 100%;
+}
+.nav-item:hover { background: var(--sidebar-hover); color: #fff; }
+.nav-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.side-card {
+  background: var(--sidebar-hover); border-radius: var(--radius-md);
+  padding: var(--space-md); color: var(--sidebar-text); font-size: 13px; margin-top: auto;
+}
+.side-card strong { display: block; color: #fff; font-size: 24px; margin: 4px 0; }
+.side-card small { font-size: 11px; }
+.main { padding: var(--space-xl); overflow-y: auto; max-height: 100vh; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: var(--space-xl);
+}
+.topbar .eyebrow { font-size: 12px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.05em; }
+.topbar h1 { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+.top-actions { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; color: var(--gray-500); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.card {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: var(--space-lg); box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
+  transition: box-shadow var(--normal) var(--ease), transform var(--normal) var(--ease);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: var(--space-lg);
+}
+.card-header h2 { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+.card-header p { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; padding: 0 var(--space-lg); border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: all var(--fast) var(--ease);
+  border: 1px solid transparent; white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+.btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--gray-700); border-color: var(--gray-200); }
+.btn-secondary:hover { border-color: var(--gray-300); background: var(--gray-50); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-ghost { background: transparent; color: var(--gray-600); }
+.btn-ghost:hover { background: var(--gray-100); }
+.btn-lg { height: 48px; padding: 0 var(--space-xl); font-size: 15px; }
+.btn-sm { height: 30px; padding: 0 var(--space-md); font-size: 12px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.badge-success { background: var(--success-light); color: #0D9E6C; }
+.badge-warning { background: var(--warning-light); color: #B45309; }
+.badge-danger { background: var(--danger-light); color: #DC2626; }
+.badge-info { background: var(--brand-light); color: var(--brand); }
+.badge-muted { background: var(--gray-100); color: var(--gray-500); }
+.badge-blue { background: var(--brand-light); color: var(--brand); }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  background: var(--gray-100); color: var(--gray-600);
+  border: 1px solid transparent; cursor: pointer;
+  transition: all var(--fast) var(--ease);
+}
+.chip:hover { border-color: var(--gray-300); }
+.chip.active { background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft); }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+.form-input, .form-select, .form-textarea {
+  height: 38px; padding: 0 12px;
+  border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--gray-800); background: var(--surface);
+  transition: border-color var(--fast) var(--ease); font-family: var(--font);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-light);
+}
+.form-textarea { height: auto; padding: 10px 12px; resize: vertical; min-height: 80px; }
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px;
+}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-md); }
+.form-grid-wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.upload-zone {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-md); border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: all var(--fast) var(--ease); background: var(--gray-50);
+}
+.upload-zone:hover { border-color: var(--brand); background: var(--brand-light); }
+.upload-preview {
+  width: 80px; height: 80px; border-radius: var(--radius-sm);
+  background: var(--gray-200); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+}
+.upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+.upload-preview.empty::after { content: "+"; font-size: 24px; color: var(--gray-400); }
+.upload-preview.small { width: 56px; height: 56px; }
+.workflow-layout { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-lg); align-items: start; }
+.workflow-main { display: flex; flex-direction: column; gap: var(--space-md); }
+.pipeline { display: flex; align-items: center; gap: 0; padding: var(--space-md) 0; }
+.pipeline-step {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; background: var(--gray-100); color: var(--gray-500); white-space: nowrap;
+}
+.pipeline-step.active { background: var(--brand-light); color: var(--brand); }
+.pipeline-step.done { background: var(--success-light); color: #0D9E6C; }
+.pipeline-step.fail { background: var(--danger-light); color: var(--danger); }
+.pipeline-arrow { color: var(--gray-300); margin: 0 6px; font-size: 16px; flex-shrink: 0; }
+.table-list { display: flex; flex-direction: column; gap: 1px; background: var(--gray-100); border-radius: var(--radius-md); overflow: hidden; }
+.table-row {
+  display: grid; grid-template-columns: 1fr 120px 140px 100px 40px;
+  align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg);
+  background: var(--surface); font-size: 13px; cursor: pointer;
+  transition: background var(--fast) var(--ease);
+}
+.table-row:hover { background: var(--gray-50); }
+.table-row.header { font-weight: 600; color: var(--gray-500); font-size: 12px; background: var(--gray-50); cursor: default; text-transform: uppercase; letter-spacing: 0.04em; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-md); }
+.model-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  border: 1px solid var(--gray-100); overflow: hidden;
+  transition: all var(--normal) var(--ease); cursor: pointer;
+}
+.model-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.model-card-img { width: 100%; height: 200px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 13px; }
+.model-card-body { padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; }
+.model-card-body strong { font-size: 14px; }
+.model-card-body span { font-size: 12px; color: var(--gray-500); }
+.result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-md); }
+.result-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  border: 2px solid transparent; overflow: hidden; position: relative;
+  transition: all var(--normal) var(--ease); cursor: pointer;
+}
+.result-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.result-card.selected { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-light); }
+.result-card-img { width: 100%; aspect-ratio: 3/4; background: var(--gray-100); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 13px; position: relative; }
+.hover-overlay {
+  position: absolute; inset: 0; background: rgba(15,23,42,.45);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm);
+  opacity: 0; transition: opacity var(--normal) var(--ease);
+}
+.result-card:hover .hover-overlay { opacity: 1; }
+.result-card-footer { padding: var(--space-sm) var(--space-md); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-50); }
+.timeline { display: flex; flex-direction: column; gap: 0; padding-left: var(--space-lg); border-left: 2px solid var(--gray-200); }
+.timeline-item { position: relative; padding: var(--space-md) 0 var(--space-md) var(--space-lg); }
+.timeline-item::before {
+  content: ""; position: absolute; left: calc(-1 * var(--space-lg) - 5px); top: 22px;
+  width: 10px; height: 10px; border-radius: 50%; background: var(--gray-300); border: 2px solid var(--surface);
+}
+.timeline-item.active::before { background: var(--brand); box-shadow: 0 0 0 4px var(--brand-light); }
+.timeline-item.done::before { background: var(--success); }
+.timeline-item.fail::before { background: var(--danger); }
+.timeline-item strong { display: block; font-size: 14px; }
+.timeline-item span { font-size: 12px; color: var(--gray-500); }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.stat-card {
+  background: var(--surface); border-radius: var(--radius-md);
+  padding: var(--space-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100);
+}
+.stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-900); line-height: 1.2; }
+.stat-card .stat-label { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+.stat-card .stat-change { font-size: 12px; margin-top: 4px; }
+.stat-up { color: var(--success); }
+.stat-down { color: var(--danger); }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: var(--space-3xl) var(--space-xl); text-align: center; color: var(--gray-400);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: var(--space-md); opacity: .5; }
+.empty-state strong { color: var(--gray-600); font-size: 16px; }
+.empty-state p { font-size: 13px; margin-top: 4px; }
+.alert {
+  display: flex; align-items: flex-start; gap: var(--space-sm);
+  padding: var(--space-md); border-radius: var(--radius-sm); font-size: 13px;
+}
+.alert-danger { background: var(--danger-light); color: #991B1B; border: 1px solid #FECACA; }
+.alert-warning { background: var(--warning-light); color: #92400E; border: 1px solid #FDE68A; }
+.alert-success { background: var(--success-light); color: #065F46; border: 1px solid #A7F3D0; }
+.alert-info { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-soft); }
+.section-header {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-md) 0; border-bottom: 1px solid var(--gray-100); margin-bottom: var(--space-lg);
+}
+.section-header h3 { font-size: 18px; font-weight: 600; }
+.section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--brand); background: var(--brand-light); padding: 4px 10px; border-radius: 4px;
+}
+.swatch { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
+.swatch-box { width: 56px; height: 56px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); border: 1px solid var(--gray-100); }
+.swatch-name { font-size: 11px; color: var(--gray-500); }
+.swatch-hex { font-size: 10px; color: var(--gray-400); font-family: var(--font-mono); }
+.screen { margin-bottom: var(--space-3xl); border-top: 4px solid var(--gray-900); padding-top: var(--space-2xl); }
+.screen:first-of-type { border-top: none; padding-top: 0; }
+.screen-title { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-xl); }
+.screen-number {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--gray-900);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px;
+}
+.screen-title h2 { font-size: 20px; font-weight: 700; }
+.screen-title span { font-size: 13px; color: var(--gray-500); }
+.modal-overlay {
+  background: rgba(15,23,42,.6); backdrop-filter: blur(4px);
+  border-radius: var(--radius-lg); padding: var(--space-2xl);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-box {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: var(--space-xl); max-width: 500px;
+  box-shadow: var(--shadow-xl); text-align: center;
+}
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--gray-300); position: relative;
+  cursor: pointer; transition: background var(--fast) var(--ease);
+}
+.toggle.on { background: var(--brand); }
+.toggle::after {
+  content: ""; position: absolute; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px;
+  transition: transform var(--fast) var(--ease); box-shadow: var(--shadow-sm);
+}
+.toggle.on::after { transform: translateX(20px); }
+.progress-bar { height: 6px; border-radius: 3px; background: var(--gray-100); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--brand); transition: width var(--slow) var(--ease); }
+.progress-fill.success { background: var(--success); }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--space-sm); }
+.detail-thumb {
+  aspect-ratio: 1; border-radius: var(--radius-sm);
+  background: var(--gray-100); border: 2px solid transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--gray-400); transition: border-color var(--fast) var(--ease);
+}
+.detail-thumb:hover { border-color: var(--brand); }
+.expand-row { background: var(--gray-50); padding: var(--space-lg); border-radius: 0 0 var(--radius-md) var(--radius-md); font-size: 13px; }
+.expand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-md); }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 12px; }
+.text-muted { color: var(--gray-500); }
+.text-danger { color: var(--danger); }
+.text-success { color: var(--success); }
+.font-bold { font-weight: 600; }
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+@media (max-width: 1200px) {
+  .workflow-layout { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================================
+   QUICK NAV — 左侧固定快捷导航
+   ============================================================ */
+.quick-nav {
+  position: fixed; left: var(--space-lg); top: 50%; transform: translateY(-50%);
+  z-index: 1000; display: flex; flex-direction: column; gap: 4px;
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); border: 1px solid var(--gray-100);
+  padding: var(--space-lg); width: 180px;
+}
+.quick-nav-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--gray-400);
+  padding: 0 4px 10px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.quick-nav a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--gray-600); text-decoration: none;
+  transition: all var(--fast) var(--ease);
+}
+.quick-nav a:hover { background: var(--gray-50); color: var(--gray-900); }
+.quick-nav a.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+.quick-nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-300); flex-shrink: 0; }
+.quick-nav a.active .quick-nav-dot { background: var(--brand); }
+/* Offset body to make room for quick nav */
+body { padding-left: 220px; }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- Quick Nav -->
+<nav class="quick-nav">
+  <div class="quick-nav-title">快捷导航</div>
+  <a href="#s01" class="active"><span class="quick-nav-dot"></span>智能试穿工作台</a>
+  <a href="#s02"><span class="quick-nav-dot"></span>任务进度</a>
+  <a href="#s04"><span class="quick-nav-dot"></span>历史任务</a>
+  <a href="#s03"><span class="quick-nav-dot"></span>结果管理</a>
+  <a href="#s05"><span class="quick-nav-dot"></span>系统模特库</a>
+  <a href="#s06"><span class="quick-nav-dot"></span>模型与版本管理</a>
+  <a href="#s00" style="margin-top:4px;border-top:1px solid var(--gray-100);padding-top:10px;border-radius:0;"><span class="quick-nav-dot"></span>设计系统</a>
+</nav>
+
+<!-- SCREEN 00 · DESIGN SYSTEM -->
+<div class="screen" id="s00">
+  <div class="screen-title"><div class="screen-number">00</div><div><h2>Design System · 设计系统 v1.2.1</h2><span>基于涂鸦开发者平台设计语言，为 AI 虚拟人穿衣 SaaS 定制</span></div></div>
+
+  <div class="card mb-lg">
+    <div class="card-header"><div><h2>色彩系统 Color Palette</h2><p>品牌蓝主色 + 中性灰层级 + 功能语义色</p></div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-lg);">
+      <div>
+        <div class="section-label" style="margin-bottom:var(--space-md)">Brand 品牌色</div>
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+          <div class="swatch"><div class="swatch-box" style="background:var(--brand)"></div><div class="swatch-name">Brand</div><div class="swatch-hex">#2D6CF6</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--brand-hover)"></div><div class="swatch-name">Hover</div><div class="swatch-hex">#1E54D4</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--brand-light)"></div><div class="swatch-name">Light</div><div class="swatch-hex">#EEF3FE</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:var(--space-md)">Functional 功能色</div>
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+          <div class="swatch"><div class="swatch-box" style="background:var(--success)"></div><div class="swatch-name">Success</div><div class="swatch-hex">#16C47F</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--warning)"></div><div class="swatch-name">Warning</div><div class="swatch-hex">#F59E0B</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--danger)"></div><div class="swatch-name">Danger</div><div class="swatch-hex">#EF4444</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--info)"></div><div class="swatch-name">Info</div><div class="swatch-hex">#6366F1</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom:var(--space-md)">Neutral 中性色</div>
+        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-50)"></div><div class="swatch-name">50</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-100)"></div><div class="swatch-name">100</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-200)"></div><div class="swatch-name">200</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-300)"></div><div class="swatch-name">300</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-500)"></div><div class="swatch-name">500</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-700)"></div><div class="swatch-name">700</div></div>
+          <div class="swatch"><div class="swatch-box" style="background:var(--gray-900)"></div><div class="swatch-name">900</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-lg">
+    <div class="card-header"><div><h2>字体层级 Typography</h2><p>系统字体栈，中文优先 PingFang SC</p></div></div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+      <div><div style="font-size:28px;font-weight:700;color:var(--gray-900);">Heading 1 · 28px Bold</div><div class="text-sm text-muted mt-sm">页面主标题</div></div>
+      <div><div style="font-size:20px;font-weight:700;color:var(--gray-900);">Heading 2 · 20px Bold</div><div class="text-sm text-muted mt-sm">区块标题</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:var(--gray-900);">Heading 3 · 16px Semibold</div><div class="text-sm text-muted mt-sm">卡片标题</div></div>
+      <div><div style="font-size:14px;color:var(--gray-800);">Body · 14px Regular</div><div class="text-sm text-muted mt-sm">正文</div></div>
+      <div><div style="font-size:13px;color:var(--gray-500);">Caption · 13px Regular</div><div class="text-sm text-muted mt-sm">辅助说明</div></div>
+    </div>
+  </div>
+
+  <div class="card mb-lg">
+    <div class="card-header"><div><h2>组件库 Components</h2><p>基础交互组件预览</p></div></div>
+    <div class="section-label" style="margin-bottom:var(--space-md)">Buttons 按钮</div>
+    <div class="flex flex-wrap gap-md mb-lg">
+      <button class="btn btn-primary">主按钮 Primary</button>
+      <button class="btn btn-primary btn-lg">大按钮 Large</button>
+      <button class="btn btn-secondary">次按钮 Secondary</button>
+      <button class="btn btn-danger">危险按钮</button>
+      <button class="btn btn-ghost">幽灵按钮</button>
+      <button class="btn btn-primary" disabled>禁用状态</button>
+    </div>
+    <div class="section-label" style="margin-bottom:var(--space-md)">Badges & Chips</div>
+    <div class="flex flex-wrap gap-sm mb-lg">
+      <span class="badge badge-success">已完成</span><span class="badge badge-warning">处理中</span>
+      <span class="badge badge-danger">失败</span><span class="badge badge-info">推荐</span>
+      <span class="badge badge-muted">待处理</span><span class="badge badge-blue">8 额度</span>
+    </div>
+    <div class="flex flex-wrap gap-sm mb-lg">
+      <span class="chip active">全部</span><span class="chip">商品图</span><span class="chip">社媒图</span><span class="chip">短视频</span>
+    </div>
+    <div class="section-label" style="margin-bottom:var(--space-md)">Form Elements</div>
+    <div class="form-grid mb-lg">
+      <div class="form-group"><span class="form-label">文本输入</span><input class="form-input" placeholder="输入内容..."></div>
+      <div class="form-group"><span class="form-label">下拉选择</span><select class="form-select"><option>选项 1</option><option>选项 2</option></select></div>
+      <div class="form-group"><span class="form-label">文本域</span><textarea class="form-textarea" rows="2" placeholder="输入描述..."></textarea></div>
+    </div>
+    <div class="section-label" style="margin-bottom:var(--space-md)">Alerts</div>
+    <div class="flex flex-col gap-sm mb-lg" style="max-width:600px;">
+      <div class="alert alert-success">任务已成功提交，预计 90 秒内完成生成。</div>
+      <div class="alert alert-warning">额度不足，还差 3 额度。请先充值或等待进行中的任务完成。</div>
+      <div class="alert alert-danger">服装图片识别失败：未检测到可识别的服装主体。</div>
+      <div class="alert alert-info">Agent 正在分析图片特征，推荐最佳参数组合。</div>
+    </div>
+    <div class="section-label" style="margin-bottom:var(--space-md)">Progress</div>
+    <div style="max-width:400px;display:flex;flex-direction:column;gap:var(--space-md);">
+      <div><div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div><span class="text-xs text-muted">正在生成 · 65% · 约 40 秒</span></div>
+      <div><div class="progress-bar"><div class="progress-fill success" style="width:100%"></div></div><span class="text-xs text-success">生成完成</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div><h2>阴影层级 Shadows</h2><p>从 xs 到 xl 的 5 级抬升体系</p></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--space-lg);">
+      <div class="card" style="box-shadow:var(--shadow-xs);text-align:center;padding:var(--space-xl);"><span class="text-xs text-muted">shadow-xs</span><br><span style="font-size:12px;color:var(--gray-400);">底层轻微</span></div>
+      <div class="card" style="box-shadow:var(--shadow-sm);text-align:center;padding:var(--space-xl);"><span class="text-xs text-muted">shadow-sm</span><br><span style="font-size:12px;color:var(--gray-400);">卡片默认</span></div>
+      <div class="card" style="box-shadow:var(--shadow-md);text-align:center;padding:var(--space-xl);"><span class="text-xs text-muted">shadow-md</span><br><span style="font-size:12px;color:var(--gray-400);">hover态</span></div>
+      <div class="card" style="box-shadow:var(--shadow-lg);text-align:center;padding:var(--space-xl);"><span class="text-xs text-muted">shadow-lg</span><br><span style="font-size:12px;color:var(--gray-400);">下拉/弹出层</span></div>
+      <div class="card" style="box-shadow:var(--shadow-xl);text-align:center;padding:var(--space-xl);"><span class="text-xs text-muted">shadow-xl</span><br><span style="font-size:12px;color:var(--gray-400);">模态框</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 01 · SMART TRY-ON WORKBENCH -->
+<div class="screen" id="s01">
+  <div class="screen-title"><div class="screen-number">01</div><div><h2>智能试穿工作台 · Smart Try-On Workbench</h2><span>主操作页面 — 左侧工作区 + 右侧任务摘要面板</span></div></div>
+
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-value">128</div><div class="stat-label">本月任务数</div><div class="stat-change stat-up">↑ 12% vs 上月</div></div>
+    <div class="stat-card"><div class="stat-value">94.2%</div><div class="stat-label">生成成功率</div><div class="stat-change stat-up">↑ 2.1%</div></div>
+    <div class="stat-card"><div class="stat-value">856</div><div class="stat-label">可用额度</div><div class="stat-change" style="color:var(--gray-500);">本月已用 344</div></div>
+    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">进行中任务</div><div class="stat-change" style="color:var(--brand);">查看进度 →</div></div>
+  </div>
+
+  <div class="workflow-layout">
+    <div class="workflow-main">
+      <div class="card">
+        <div class="card-header"><div><h2>生成方案</h2><p>描述用途，Agent 自动推荐最优参数组合</p></div><span class="badge badge-info">AI Agent</span></div>
+        <textarea class="form-textarea" rows="3" placeholder="例如：适合 TikTok 上新的欧美模特短视频，同时生成商品图，需要街拍风格背景..."></textarea>
+        <div class="flex items-center justify-between mt-md">
+          <div class="flex flex-wrap gap-sm"><span class="chip">商品图</span><span class="chip">TikTok 短视频</span><span class="chip">Instagram</span><span class="chip">详情页图</span><span class="chip active">Amazon</span></div>
+          <button class="btn btn-primary">生成推荐参数</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><h2>上传素材</h2><p>上传服装图与模特图，系统自动预检</p></div><span class="badge badge-muted">待上传</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+          <div>
+            <div class="upload-zone">
+              <div class="upload-preview empty"></div>
+              <div><strong style="display:block;font-size:14px;">上传服装正面图</strong><span class="text-xs text-muted">JPG/PNG/WebP · 5KB-20MB · 衣服正面/平铺图</span></div>
+            </div>
+            <div class="detail-grid mt-sm"><div class="detail-thumb">细节1</div><div class="detail-thumb">细节2</div><div class="detail-thumb">+</div></div>
+          </div>
+          <div>
+            <div class="upload-zone">
+              <div class="upload-preview small empty"></div>
+              <div><strong style="display:block;font-size:14px;">上传真人/模特图片</strong><span class="text-xs text-muted">JPG/PNG/WebP · 真人正面全身照</span></div>
+            </div>
+            <div class="flex items-center gap-sm mt-sm" style="justify-content:space-between;">
+              <span class="text-xs text-muted">或从模特库快速选择：</span>
+              <button class="btn btn-ghost btn-sm">浏览全部 →</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-top:var(--space-sm);">
+              <div style="aspect-ratio:3/4;border-radius:var(--radius-sm);background:linear-gradient(135deg,#f0e6ff,#e0d0f8);border:2px solid var(--brand);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-600);cursor:pointer;position:relative;box-shadow:0 0 0 4px var(--brand-light);">
+                Luna
+                <span style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--brand);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;">✓</span>
+              </div>
+              <div style="aspect-ratio:3/4;border-radius:var(--radius-sm);background:linear-gradient(135deg,#e6f0ff,#d0ddf8);border:2px dashed var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-500);cursor:pointer;transition:all var(--fast) var(--ease);" onmouseover="this.style.borderColor='var(--brand)';this.style.color='var(--gray-700)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-500)'">Bella</div>
+              <div style="aspect-ratio:3/4;border-radius:var(--radius-sm);background:linear-gradient(135deg,#ffe6f0,#f8d0e0);border:2px dashed var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-500);cursor:pointer;transition:all var(--fast) var(--ease);" onmouseover="this.style.borderColor='var(--brand)';this.style.color='var(--gray-700)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-500)'">Yuki</div>
+              <div style="aspect-ratio:3/4;border-radius:var(--radius-sm);background:linear-gradient(135deg,#e6fff0,#d0f8e0);border:2px dashed var(--gray-200);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray-500);cursor:pointer;transition:all var(--fast) var(--ease);" onmouseover="this.style.borderColor='var(--brand)';this.style.color='var(--gray-700)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-500)'">Mike</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-success mt-md">服装图检测通过：识别为「连衣裙」品类，正面平铺图，分辨率 2048×2732，质量良好。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><h2>品质预检 Preflight</h2><p>阻断项不允许提交，风险项进入质量评分</p></div><span class="badge badge-success">全部通过</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
+          <div class="flex items-center gap-sm"><span class="badge badge-success">✓</span><span class="text-sm">服装品类识别</span><span class="text-xs text-muted">连衣裙 · 置信度 96%</span></div>
+          <div class="flex items-center gap-sm"><span class="badge badge-success">✓</span><span class="text-sm">模特姿态检测</span><span class="text-xs text-muted">正面站立 · 全身可见</span></div>
+          <div class="flex items-center gap-sm"><span class="badge badge-success">✓</span><span class="text-sm">图片分辨率</span><span class="text-xs text-muted">2048×2732 · 满足商用标准</span></div>
+          <div class="flex items-center gap-sm"><span class="badge badge-warning">!</span><span class="text-sm">背景复杂度</span><span class="text-xs text-muted">中等 · 建议开启精修优化</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><h2>参数确认</h2><p>Agent 推荐值可人工调整</p></div><span class="badge badge-blue">预计 8 额度</span></div>
+        <div class="form-grid form-grid-wide">
+          <div class="form-group"><span class="form-label">生成数量</span><select class="form-select"><option>1</option><option selected>2</option><option>4</option><option>6</option><option>8</option></select></div>
+          <div class="form-group"><span class="form-label">图片画幅</span><select class="form-select"><option>1:1</option><option>4:5</option><option selected>3:4</option><option>9:16</option></select></div>
+          <div class="form-group"><span class="form-label">图片背景</span><select class="form-select"><option>干净棚拍</option><option>白底</option><option selected>街拍</option><option>室内</option></select></div>
+          <div class="form-group"><span class="form-label">试衣模型</span><select class="form-select"><option selected>Pixelcut Try-On · 主测</option><option>百炼 AI 试衣 Plus</option><option>302.AI FASHN Try-On</option></select></div>
+          <div class="form-group"><span class="form-label">品质链路</span><select class="form-select"><option>快速预览</option><option selected>商用品质 · 精修+质检</option><option>商拍增强</option></select></div>
+          <div class="form-group"><span class="form-label">出图模型</span><select class="form-select"><option selected>gpt-image-1.5 · 高质量</option><option>gpt-image-1 · 稳定通用</option></select></div>
+        </div>
+        <div class="flex items-center gap-md mt-md" style="padding-top:var(--space-md);border-top:1px solid var(--gray-100);">
+          <div class="flex items-center gap-sm"><span class="text-sm">试衣前图改图</span><div class="toggle"></div></div>
+          <div class="flex items-center gap-sm"><span class="text-sm">试衣图精修</span><div class="toggle on"></div></div>
+          <div class="flex items-center gap-sm"><span class="text-sm">最终商用出图</span><div class="toggle on"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="position:sticky;top:var(--space-xl);">
+      <div class="card-header"><div><h2>任务摘要</h2><p>提交前最终确认</p></div></div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+        <div class="flex justify-between"><span class="text-sm text-muted">服装品类</span><span class="text-sm font-bold">连衣裙 (dress)</span></div>
+        <div class="flex justify-between"><span class="text-sm text-muted">模特来源</span><span class="text-sm font-bold">系统模特 · Luna</span></div>
+        <div class="flex justify-between"><span class="text-sm text-muted">输出类型</span><span class="text-sm font-bold">图片 + 视频</span></div>
+        <div class="flex justify-between"><span class="text-sm text-muted">预计生成数</span><span class="text-sm font-bold">2 图 + 1 视频</span></div>
+        <div class="flex justify-between"><span class="text-sm text-muted">品质链路</span><span class="badge badge-info">商用品质</span></div>
+        <div class="flex justify-between" style="padding-top:var(--space-md);border-top:1px solid var(--gray-100);"><span class="text-sm text-muted">预估额度</span><span style="font-size:20px;font-weight:700;color:var(--brand);">8</span></div>
+        <button class="btn btn-primary btn-lg" style="width:100%;">提交生成任务</button>
+        <div class="alert alert-info" style="font-size:12px;">提交后预扣额度，失败按规则返还。预计 90-180 秒完成。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 02 · TASK PROGRESS -->
+<div class="screen" id="s02">
+  <div class="screen-title"><div class="screen-number">02</div><div><h2>任务进度 · Task Progress & Generation Status</h2><span>实时展示生成流水线各阶段状态，含品质管控全链路</span></div></div>
+
+  <div class="workflow-layout">
+    <div class="workflow-main">
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <div><h2 style="font-size:18px;font-weight:600;">任务 #TRY-20240517-0042</h2><p class="text-sm text-muted">连衣裙 · Luna 模特 · 2图+1视频 · 商用品质链路</p></div>
+          <div style="text-align:right;"><span class="badge badge-warning" style="font-size:13px;padding:4px 14px;">生成中 · 65%</span><p class="text-xs text-muted mt-sm">预计剩余 40 秒</p></div>
+        </div>
+        <div class="progress-bar mt-md" style="height:8px;border-radius:4px;"><div class="progress-fill" style="width:65%;"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><h2>品质管线 Quality Pipeline</h2><p>商用品质链路：候选生成 → 质量评分 → 精修 → 质检 → 高清出图</p></div></div>
+        <div class="pipeline" style="flex-wrap:wrap;">
+          <span class="pipeline-step done">✓ 上传预检</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step done">✓ 图像预处理</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step active">⟳ 试衣生成中</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">质量评分</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">精修复</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">质检分≥75</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step">高清出图</span>
+        </div>
+      </div>
+
+      <div class="card" style="border:1px solid #FECACA;">
+        <div class="card-header"><div><h2>失败态示例 · Failed Pipeline</h2><p>当某个环节失败时的管线展示 — 失败步骤标红，后续步骤置灰</p></div><span class="badge badge-danger">任务失败</span></div>
+        <div class="pipeline" style="flex-wrap:wrap;">
+          <span class="pipeline-step done">✓ 上传预检</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step done">✓ 图像预处理</span><span class="pipeline-arrow">→</span>
+          <span class="pipeline-step fail">✕ 试衣生成失败</span><span class="pipeline-arrow" style="color:var(--gray-200);">→</span>
+          <span class="pipeline-step" style="opacity:.4;">质量评分</span><span class="pipeline-arrow" style="color:var(--gray-200);">→</span>
+          <span class="pipeline-step" style="opacity:.4;">精修复</span><span class="pipeline-arrow" style="color:var(--gray-200);">→</span>
+          <span class="pipeline-step" style="opacity:.4;">质检分≥75</span><span class="pipeline-arrow" style="color:var(--gray-200);">→</span>
+          <span class="pipeline-step" style="opacity:.4;">高清出图</span>
+        </div>
+        <div class="alert alert-danger mt-md">试衣模型返回错误：服装主体检测置信度不足 (42%)，建议更换服装图后重试。已自动返还 8 额度。</div>
+        <div class="flex gap-sm mt-md"><button class="btn btn-primary btn-sm">重新提交</button><button class="btn btn-secondary btn-sm">更换服装图</button><button class="btn btn-ghost btn-sm">查看日志</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div><h2>执行时间线</h2><p>实时更新各步骤状态与耗时</p></div></div>
+        <div class="timeline">
+          <div class="timeline-item done"><strong>上传预检通过</strong><span>服装品类识别: 连衣裙 · 96% 置信度 · 0.3s</span></div>
+          <div class="timeline-item done"><strong>图像预处理完成</strong><span>生成百炼合规图 + 背景移除 · 2.1s</span></div>
+          <div class="timeline-item done"><strong>模特匹配完成</strong><span>Luna · 亚洲 · 全身站姿 · slim · 1.0s</span></div>
+          <div class="timeline-item active">
+            <strong>试衣生成中</strong><span>Pixelcut Try-On 处理中 · 已耗时 48s</span>
+            <div class="progress-bar mt-sm" style="width:200px;"><div class="progress-fill" style="width:65%;"></div></div>
+          </div>
+          <div class="timeline-item"><strong>等待：质量评分</strong><span>将评估 4 张候选图的门槛分</span></div>
+          <div class="timeline-item"><strong>等待：精修 + 质检</strong><span>修复服装边缘、融合关系、清晰度</span></div>
+          <div class="timeline-item"><strong>等待：最终商用出图</strong><span>gpt-image-1.5 高清输出 · 提升细节和自然度</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="position:sticky;top:var(--space-xl);">
+      <div class="card-header"><div><h2>任务信息</h2></div></div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+
+        <!-- 进度百分比环形 -->
+        <div style="display:flex;align-items:center;gap:var(--space-lg);padding:var(--space-md);background:var(--gray-50);border-radius:var(--radius-md);">
+          <svg width="72" height="72" viewBox="0 0 72 72" style="flex-shrink:0;">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--gray-200)" stroke-width="6"/>
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--brand)" stroke-width="6"
+              stroke-dasharray="188.5" stroke-dashoffset="66" stroke-linecap="round"
+              transform="rotate(-90 36 36)" style="transition:stroke-dashoffset .6s var(--ease);"/>
+            <text x="36" y="38" text-anchor="middle" font-size="18" font-weight="700" fill="var(--gray-900)">65%</text>
+          </svg>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--gray-800);">试衣生成中</div>
+            <div class="text-xs text-muted">步骤 4 / 7</div>
+            <div class="text-xs text-muted">预计剩余 40 秒</div>
+          </div>
+        </div>
+
+        <div><span class="text-xs text-muted">任务 ID</span><br><span class="text-sm font-bold">TRY-20240517-0042</span></div>
+        <div><span class="text-xs text-muted">提交时间</span><br><span class="text-sm">2024-05-17 14:32:08</span></div>
+        <div><span class="text-xs text-muted">已用额度</span><br><span class="text-sm font-bold" style="color:var(--brand);">8 (预扣)</span></div>
+        <div><span class="text-xs text-muted">试衣模型</span><br><span class="text-sm">Pixelcut Try-On</span></div>
+        <div><span class="text-xs text-muted">品质链路</span><br><span class="badge badge-info">商用品质</span></div>
+        <hr style="border:none;border-top:1px solid var(--gray-100);">
+        <button class="btn btn-secondary" style="width:100%;">取消任务</button>
+        <span class="text-xs text-muted" style="text-align:center;">取消后按进度比例返还额度</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 03 · RESULT MANAGEMENT -->
+<div class="screen" id="s03">
+  <div class="screen-title"><div class="screen-number">03</div><div><h2>结果管理 · Result Management</h2><span>按商用质量分级管理素材，未达门槛的图片不进入高清下载</span></div></div>
+
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">本次生成结果</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success);">5</div><div class="stat-label">推荐 (质量分 ≥ 85)</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--brand);">4</div><div class="stat-label">可用 (质量分 75-84)</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning);">2</div><div class="stat-label">待修复 (质量分 60-74)</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div><h2>结果列表</h2><p>点击图片查看大图与详细参数</p></div>
+      <div class="flex gap-sm"><span class="chip active">全部 (12)</span><span class="chip">推荐 (5)</span><span class="chip">可用 (4)</span><span class="chip">待修复 (2)</span><span class="chip">不可用 (1)</span></div>
+    </div>
+    <div class="result-grid">
+      <div class="result-card selected">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#e8f0fe,#d4e4fd);">推荐 · 质量分 92
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0042</span>
+          <span class="text-xs text-muted">05-17 14:32</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-success">推荐</span><span class="text-xs text-muted">图1 · 3:4</span></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#e8f0fe,#d4e4fd);">推荐 · 质量分 89
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0042</span>
+          <span class="text-xs text-muted">05-17 14:32</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-success">推荐</span><span class="text-xs text-muted">图2 · 3:4</span></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#f0f4ff,#e0e8ff);">可用 · 质量分 81
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0042</span>
+          <span class="text-xs text-muted">05-17 14:32</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-info">可用</span><span class="text-xs text-muted">图3 · 3:4</span></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#f0f4ff,#e0e8ff);">可用 · 质量分 78
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0038</span>
+          <span class="text-xs text-muted">05-17 10:15</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-info">可用</span><span class="text-xs text-muted">图4 · 1:1</span></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#fef8e6,#fef0c8);">待修复 · 质量分 68
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0038</span>
+          <span class="text-xs text-muted">05-17 10:15</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-warning">待修复</span><span class="text-xs text-muted">图5 · 3:4</span></div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img" style="background:linear-gradient(135deg,#fef8e6,#fef0c8);">待修复 · 质量分 63
+          <div class="hover-overlay"><button class="btn btn-primary btn-sm">预览大图</button><button class="btn btn-secondary btn-sm">下载</button></div>
+        </div>
+        <div style="padding:var(--space-sm) var(--space-md);display:flex;flex-direction:column;gap:2px;">
+          <span class="text-xs text-muted">TRY-20240517-0042</span>
+          <span class="text-xs text-muted">05-17 14:32</span>
+        </div>
+        <div class="result-card-footer"><span class="badge badge-warning">待修复</span><span class="text-xs text-muted">图6 · 9:16</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-md" style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-lg);align-items:start;">
+    <div style="width:280px;aspect-ratio:3/4;background:linear-gradient(135deg,#e8f0fe,#d4e4fd);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gray-500);">选中图片预览</div>
+    <div>
+      <h3 style="font-size:16px;font-weight:600;">图1 · 推荐 · 质量分 92</h3>
+      <div class="expand-grid mt-md">
+        <div><span class="text-xs text-muted">质量分</span><br><span class="font-bold" style="color:var(--success);">92 / 100</span></div>
+        <div><span class="text-xs text-muted">服装一致性</span><br><span class="font-bold">95%</span></div>
+        <div><span class="text-xs text-muted">清晰度</span><br><span class="font-bold">91%</span></div>
+        <div><span class="text-xs text-muted">自然度</span><br><span class="font-bold">88%</span></div>
+        <div><span class="text-xs text-muted">背景融合</span><br><span class="font-bold">93%</span></div>
+        <div><span class="text-xs text-muted">分辨率</span><br><span class="font-bold">2400×3200</span></div>
+      </div>
+      <div class="flex gap-sm mt-lg"><button class="btn btn-primary btn-sm">高清下载</button><button class="btn btn-secondary btn-sm">参数回显</button><button class="btn btn-ghost btn-sm">标记不可用</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 04 · TASK HISTORY -->
+<div class="screen" id="s04">
+  <div class="screen-title"><div class="screen-number">04</div><div><h2>任务历史 · Task History</h2><span>可展开行查看完整参数与结果，支持按状态筛选与批量操作</span></div></div>
+
+  <div class="card mb-md">
+    <div class="flex items-center gap-md flex-wrap">
+      <div class="flex gap-sm"><span class="chip active">全部 (128)</span><span class="chip">已完成 (112)</span><span class="chip">生成中 (3)</span><span class="chip">失败 (8)</span><span class="chip">已取消 (5)</span></div>
+      <div style="margin-left:auto;display:flex;gap:var(--space-sm);align-items:center;">
+        <button class="btn btn-danger btn-sm" style="opacity:.4;">删除选中 (0)</button>
+        <input class="form-input" placeholder="搜索任务 ID ..." style="width:200px;"><button class="btn btn-secondary btn-sm">刷新</button></div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="table-list">
+      <div class="table-row header" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;"><span></span><span>任务信息</span><span>状态</span><span>时间</span><span>额度</span><span></span><span></span></div>
+      <div class="table-row" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand);">
+        <div><strong>TRY-20240517-0042</strong><span class="text-xs text-muted" style="display:block;">连衣裙 · Luna · 2图+1视频</span></div>
+        <span class="badge badge-success">已完成</span><span class="text-sm text-muted">05-17 14:32</span><span class="text-sm">8</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);">删除</button>
+        <span style="color:var(--gray-400);">▸</span>
+      </div>
+      <div class="expand-row">
+        <div class="expand-grid">
+          <div><span class="text-xs text-muted">服装品类</span><br><span class="text-sm">连衣裙 (dress)</span></div>
+          <div><span class="text-xs text-muted">模特</span><br><span class="text-sm">Luna · 亚洲 · slim</span></div>
+          <div><span class="text-xs text-muted">试衣模型</span><br><span class="text-sm">Pixelcut Try-On</span></div>
+          <div><span class="text-xs text-muted">品质链路</span><br><span class="badge badge-info">商用品质</span></div>
+          <div><span class="text-xs text-muted">生成结果</span><br><span class="text-sm">5推荐 · 4可用 · 2待修复</span></div>
+          <div><span class="text-xs text-muted">耗时</span><br><span class="text-sm">142 秒</span></div>
+        </div>
+        <div class="flex gap-sm mt-md"><button class="btn btn-secondary btn-sm">查看结果</button><button class="btn btn-ghost btn-sm">重新生成</button></div>
+      </div>
+      <div class="table-row" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand);">
+        <div><strong>TRY-20240517-0038</strong><span class="text-xs text-muted" style="display:block;">衬衫 · Mike · 4图</span></div>
+        <span class="badge badge-success">已完成</span><span class="text-sm text-muted">05-17 10:15</span><span class="text-sm">6</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);">删除</button>
+        <span style="color:var(--gray-400);">▸</span>
+      </div>
+      <div class="table-row" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand);">
+        <div><strong>TRY-20240517-0035</strong><span class="text-xs text-muted" style="display:block;">夹克 · 自上传模特 · 2图</span></div>
+        <span class="badge badge-danger">失败</span><span class="text-sm text-muted">05-17 09:42</span><span class="text-sm">4</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);">删除</button>
+        <span style="color:var(--gray-400);">▸</span>
+      </div>
+      <div class="table-row" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand);">
+        <div><strong>TRY-20240516-0028</strong><span class="text-xs text-muted" style="display:block;">羽绒服 · Bella · 1图+1视频</span></div>
+        <span class="badge badge-warning">处理中</span><span class="text-sm text-muted">05-16 18:20</span><span class="text-sm">10</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);">删除</button>
+        <span style="color:var(--gray-400);">▸</span>
+      </div>
+      <div class="table-row" style="grid-template-columns:36px 1fr 100px 120px 80px 80px 40px;">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--brand);">
+        <div><strong>TRY-20240516-0024</strong><span class="text-xs text-muted" style="display:block;">T恤 · Luna · 1图</span></div>
+        <span class="badge badge-muted">已取消</span><span class="text-sm text-muted">05-16 15:08</span><span class="text-sm">2</span>
+        <button class="btn btn-ghost btn-sm" style="color:var(--danger);">删除</button>
+        <span style="color:var(--gray-400);">▸</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 05 · MODEL LIBRARY -->
+<div class="screen" id="s05">
+  <div class="screen-title"><div class="screen-number">05</div><div><h2>系统模特库 · Model Library</h2><span>管理预设模特，支持筛选、新增、编辑与风险标记</span></div></div>
+
+  <div class="card mb-md">
+    <div class="flex items-center gap-md flex-wrap">
+      <div class="flex gap-sm"><span class="chip active">全部 (24)</span><span class="chip">女模特 (16)</span><span class="chip">男模特 (6)</span><span class="chip">不限 (2)</span></div>
+      <div class="flex gap-sm" style="margin-left:auto;">
+        <select class="form-select" style="width:120px;"><option>全部体型</option><option>slim</option><option>regular</option><option>athletic</option><option>plus_size</option></select>
+        <select class="form-select" style="width:140px;"><option>全部姿态</option><option>全身站立</option><option>半身</option><option>走动</option></select>
+        <button class="btn btn-primary btn-sm">+ 新增模特</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="model-card" style="position:relative;">
+      <button style="position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid var(--gray-200);background:var(--surface);color:var(--gray-400);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+      <div class="model-card-img" style="background:linear-gradient(135deg,#f0e6ff,#e0d0f8);">Luna</div><div class="model-card-body"><strong>Luna</strong><span>女 · slim · 全身站立 · 亚洲</span><div class="flex gap-sm mt-sm"><span class="badge badge-info">连衣裙</span><span class="badge badge-info">上衣</span></div></div></div>
+    <div class="model-card" style="position:relative;">
+      <button style="position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid var(--gray-200);background:var(--surface);color:var(--gray-400);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+      <div class="model-card-img" style="background:linear-gradient(135deg,#e6f0ff,#d0ddf8);">Bella</div><div class="model-card-body"><strong>Bella</strong><span>女 · athletic · 全身站立 · 欧美</span><div class="flex gap-sm mt-sm"><span class="badge badge-info">外套</span><span class="badge badge-info">运动装</span></div></div></div>
+    <div class="model-card" style="position:relative;">
+      <button style="position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid var(--gray-200);background:var(--surface);color:var(--gray-400);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+      <div class="model-card-img" style="background:linear-gradient(135deg,#ffe6f0,#f8d0e0);">Yuki</div><div class="model-card-body"><strong>Yuki</strong><span>女 · regular · 半身 · 亚洲</span><div class="flex gap-sm mt-sm"><span class="badge badge-info">针织衫</span><span class="badge badge-warning">半身姿态</span></div></div></div>
+    <div class="model-card" style="position:relative;">
+      <button style="position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;border-radius:50%;border:1px solid var(--gray-200);background:var(--surface);color:var(--gray-400);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+      <div class="model-card-img" style="background:linear-gradient(135deg,#e6fff0,#d0f8e0);">Mike</div><div class="model-card-body"><strong>Mike</strong><span>男 · athletic · 全身站立 · 欧美</span><div class="flex gap-sm mt-sm"><span class="badge badge-info">衬衫</span><span class="badge badge-info">西装</span></div></div></div>
+    <div class="model-card"><div class="model-card-img" style="background:linear-gradient(135deg,#f0f0f0,#e0e0e0);">+ 新增模特</div><div class="model-card-body"><strong style="color:var(--brand);">上传新模特</strong><span>支持 JPG/PNG/WebP</span></div></div>
+  </div>
+
+  <div class="card mt-lg" style="display:grid;grid-template-columns:200px 1fr;gap:var(--space-xl);align-items:start;">
+    <div style="width:200px;aspect-ratio:3/4;background:linear-gradient(135deg,#f0e6ff,#e0d0f8);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--gray-500);">Luna 预览</div>
+    <div>
+      <h3 style="font-size:16px;font-weight:600;">编辑模特 · Luna</h3>
+      <div class="form-grid mt-md">
+        <div class="form-group"><span class="form-label">名称</span><input class="form-input" value="Luna"></div>
+        <div class="form-group"><span class="form-label">性别</span><select class="form-select"><option selected>女模特</option><option>男模特</option></select></div>
+        <div class="form-group"><span class="form-label">体型</span><select class="form-select"><option selected>slim</option><option>regular</option><option>athletic</option><option>plus_size</option></select></div>
+        <div class="form-group"><span class="form-label">姿态</span><select class="form-select"><option selected>全身站立</option><option>半身</option><option>走动</option></select></div>
+        <div class="form-group"><span class="form-label">适用品类</span><input class="form-input" value="dress, coat, shirt"></div>
+        <div class="form-group"><span class="form-label">风险标签</span><input class="form-input" placeholder="如：半身姿态, 手臂遮挡"></div>
+      </div>
+      <div class="flex gap-sm mt-lg"><button class="btn btn-primary btn-sm">保存</button><button class="btn btn-secondary btn-sm">取消</button><button class="btn btn-danger btn-sm" style="margin-left:auto;">删除模特</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 06 · MODEL & VERSION STACK -->
+<div class="screen" id="s06">
+  <div class="screen-title"><div class="screen-number">06</div><div><h2>模型与版本管理 · Model Stack</h2><span>管理当前项目中启用的大模型服务，控制各环节的模型开关与版本</span></div></div>
+
+  <!-- Left sidebar nav + Right content layout -->
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:var(--space-lg);align-items:start;">
+
+    <!-- Left: Sub-nav sidebar -->
+    <div class="card" style="position:sticky;top:var(--space-xl);padding:var(--space-sm);">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button class="nav-item active" style="color:var(--gray-800);background:var(--brand-light);">
+          <span class="nav-dot" style="background:var(--brand);"></span> 试衣模型
+          <span style="margin-left:auto;font-size:11px;color:var(--gray-400);">6</span>
+        </button>
+        <button class="nav-item" style="color:var(--gray-700);">
+          <span class="nav-dot" style="background:var(--info);"></span> 图改图模型
+          <span style="margin-left:auto;font-size:11px;color:var(--gray-400);">3</span>
+        </button>
+        <button class="nav-item" style="color:var(--gray-700);">
+          <span class="nav-dot" style="background:var(--success);"></span> 出图模型
+          <span style="margin-left:auto;font-size:11px;color:var(--gray-400);">3</span>
+        </button>
+        <button class="nav-item" style="color:var(--gray-700);">
+          <span class="nav-dot" style="background:var(--warning);"></span> 预检与辅助
+          <span style="margin-left:auto;font-size:11px;color:var(--gray-400);">4</span>
+        </button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--gray-100);margin:var(--space-sm) 0;">
+      <div style="padding:var(--space-sm) var(--space-md);">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-muted">已启用</span>
+          <span class="text-sm font-bold" style="color:var(--brand);">10 / 16</span>
+        </div>
+        <div class="progress-bar mt-sm" style="height:4px;"><div class="progress-fill" style="width:62%;"></div></div>
+      </div>
+    </div>
+
+    <!-- Right: Model cards by category -->
+    <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+      <!-- Category 1: 试衣模型 -->
+      <div>
+        <div class="section-header">
+          <span class="section-label">试衣模型</span>
+          <div><h3>Virtual Try-On Models</h3><span class="text-xs text-muted">核心试衣生成能力，将服装图与模特图合成试穿效果</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <!-- Model card -->
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--brand-light);display:flex;align-items:center;justify-content:center;font-size:18px;">🔗</div>
+              <div>
+                <strong style="font-size:14px;">Pixelcut Try-On</strong>
+                <span class="badge badge-success" style="margin-left:var(--space-sm);">当前主测</span>
+                <p class="text-xs text-muted mt-sm">主力试衣模型，支持上下装、连衣裙等多数品类，生成速度快</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v2.1 · 平均耗时 45s</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+              <div>
+                <strong style="font-size:14px;">GPT-Image 1.5 · 直接试衣</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">备选</span>
+                <p class="text-xs text-muted mt-sm">OpenAI 原生试衣接口，端到端生成，无需中间模型</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v1.5 · 平均耗时 30s</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">☁️</div>
+              <div>
+                <strong style="font-size:14px;">百炼 AI 试衣 Plus</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">备选</span>
+                <p class="text-xs text-muted mt-sm">阿里云百炼平台试衣模型，国内网络稳定，适合中文电商场景</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v3.2 · 平均耗时 60s</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🔄</div>
+              <div>
+                <strong style="font-size:14px;">302.AI FASHN Try-On</strong>
+                <span class="badge badge-muted" style="margin-left:var(--space-sm);">备选</span>
+                <p class="text-xs text-muted mt-sm">302.AI 聚合平台的 FASHN 试衣模型，作为主力模型的 fallback</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v1.8 · 平均耗时 55s</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🖼️</div>
+              <div>
+                <strong style="font-size:14px;">Pixazo Fashn VTON</strong>
+                <span class="badge badge-muted" style="margin-left:var(--space-sm);">中转备选</span>
+                <p class="text-xs text-muted mt-sm">通过 Pixazo 中转调用 Fashn VTON，用于跨区域容灾</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v2.0 · 平均耗时 70s</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);opacity:.6;">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🧪</div>
+              <div>
+                <strong style="font-size:14px;">Replicate IDM-VTON</strong>
+                <span class="badge badge-muted" style="margin-left:var(--space-sm);">实验模型</span>
+                <p class="text-xs text-muted mt-sm">开源 IDM-VTON 部署在 Replicate，仅用于效果对比测试</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">v1.0 · 平均耗时 90s</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 2: 图改图模型 -->
+      <div>
+        <div class="section-header">
+          <span class="section-label" style="background:#EEF2FF;color:var(--info);">图改图模型</span>
+          <div><h3>Pre-Edit Models · 试衣前图像预处理</h3><span class="text-xs text-muted">在试衣前对服装图进行背景清洁、去水印、调色等预处理</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--brand-light);display:flex;align-items:center;justify-content:center;font-size:18px;">✏️</div>
+              <div>
+                <strong style="font-size:14px;">qwen-image-edit-plus</strong>
+                <span class="badge badge-success" style="margin-left:var(--space-sm);">默认推荐</span>
+                <p class="text-xs text-muted mt-sm">轻量保守编辑，适合清洁背景、轻微提亮、去水印，成本较低</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 低 · 0.5 额度/张</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🎨</div>
+              <div>
+                <strong style="font-size:14px;">qwen-image-2.0-pro</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">高质量</span>
+                <p class="text-xs text-muted mt-sm">高质量纹理和语义理解，适合商用详情图场景</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 中 · 1.0 额度/张</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">💎</div>
+              <div>
+                <strong style="font-size:14px;">qwen-image-edit-max</strong>
+                <span class="badge badge-muted" style="margin-left:var(--space-sm);">高端</span>
+                <p class="text-xs text-muted mt-sm">复杂一致性最强，适合高要求场景，成本最高</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 高 · 2.0 额度/张</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 3: 出图模型 -->
+      <div>
+        <div class="section-header">
+          <span class="section-label" style="background:var(--success-light);color:#0D9E6C;">出图模型</span>
+          <div><h3>Post-Optimize Models · 最终商用出图</h3><span class="text-xs text-muted">试衣完成后进行高清放大、细节增强、自然度优化</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--success-light);display:flex;align-items:center;justify-content:center;font-size:18px;">🌟</div>
+              <div>
+                <strong style="font-size:14px;">gpt-image-1.5</strong>
+                <span class="badge badge-success" style="margin-left:var(--space-sm);">默认推荐</span>
+                <p class="text-xs text-muted mt-sm">高质量最终出图，提升清晰度、细节和自然度</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 中 · 2 额度/张</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">📷</div>
+              <div>
+                <strong style="font-size:14px;">gpt-image-1</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">稳定版</span>
+                <p class="text-xs text-muted mt-sm">稳定通用版本，适合大批量标准化输出</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 中 · 1.5 额度/张</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">⚡</div>
+              <div>
+                <strong style="font-size:14px;">gpt-image-1-mini</strong>
+                <span class="badge badge-muted" style="margin-left:var(--space-sm);">预览版</span>
+                <p class="text-xs text-muted mt-sm">低成本快速预览，适合生成初筛候选图</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">成本: 低 · 0.5 额度/张</span>
+              <div class="toggle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 4: 预检与辅助 -->
+      <div>
+        <div class="section-header">
+          <span class="section-label" style="background:var(--warning-light);color:#B45309;">预检与辅助</span>
+          <div><h3>Preflight & Auxiliary Services</h3><span class="text-xs text-muted">上传预检、品类识别、质量评分等辅助 AI 服务</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--warning-light);display:flex;align-items:center;justify-content:center;font-size:18px;">🔍</div>
+              <div>
+                <strong style="font-size:14px;">服装品类识别</strong>
+                <span class="badge badge-success" style="margin-left:var(--space-sm);">系统服务</span>
+                <p class="text-xs text-muted mt-sm">自动识别上传服装图的品类（连衣裙/衬衫/外套等），置信度阈值 85%</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">免费 · 自动触发</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--warning-light);display:flex;align-items:center;justify-content:center;font-size:18px;">👁️</div>
+              <div>
+                <strong style="font-size:14px;">模特姿态检测</strong>
+                <span class="badge badge-success" style="margin-left:var(--space-sm);">系统服务</span>
+                <p class="text-xs text-muted mt-sm">检测模特图姿态是否标准（正面站立/半身/侧身），给出风险提示</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">免费 · 自动触发</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">📊</div>
+              <div>
+                <strong style="font-size:14px;">质量评分模型</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">可选</span>
+                <p class="text-xs text-muted mt-sm">对试衣结果进行多维度评分（一致性/清晰度/自然度/背景融合）</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">0.2 额度/次</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-md) var(--space-lg);">
+            <div style="display:flex;align-items:center;gap:var(--space-md);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-sm);background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
+              <div>
+                <strong style="font-size:14px;">百炼合规图生成</strong>
+                <span class="badge badge-info" style="margin-left:var(--space-sm);">可选</span>
+                <p class="text-xs text-muted mt-sm">将原始服装图转为阿里云百炼平台要求的合规格式（白底/无模特）</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-lg">
+              <span class="text-xs text-muted">0.3 额度/张</span>
+              <div class="toggle on"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const nav = document.querySelector('.quick-nav');
+  const links = nav.querySelectorAll('a');
+  const screens = [...document.querySelectorAll('.screen')];
+  const map = {}; links.forEach(a => { map[a.getAttribute('href').slice(1)] = a; });
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = map[e.target.id];
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  screens.forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>

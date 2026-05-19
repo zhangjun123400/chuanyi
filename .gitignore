@@ -1,5 +1,6 @@
 .env
 .env.local
+.admin-credentials
 backend/data/
 node_modules/
 .DS_Store
